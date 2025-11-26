@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recipes       Recipe[]
+  favorites     Favorite[]
+  ratings       Rating[]
+  comments      Comment[]
+  pendingRecipes PendingRecipe[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Recipe {
+  id              String   @id @default(uuid())
+  title           String
+  description     String
+  country         String
+  prepTime        Int      // en minutes
+  cookTime        Int      // en minutes
+  servings        Int
+  difficulty      Difficulty
+  type            DishType
+  diet            Diet[]
+  imageUrl        String?
+  instructions    String   @db.Text
+  isPublished     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  authorId        String
+  author          User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  ingredients     Ingredient[]
+  favorites       Favorite[]
+  ratings         Rating[]
+  comments        Comment[]
+
+  @@index([country])
+  @@index([type])
+  @@index([authorId])
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum DishType {
+  STARTER
+  MAIN
+  DESSERT
+  SNACK
+  DRINK
+}
+
+enum Diet {
+  VEGETARIAN
+  VEGAN
+  GLUTEN_FREE
+  DAIRY_FREE
+  HALAL
+  KOSHER
+}
+
+model Ingredient {
+  id       String @id @default(uuid())
+  name     String
+  quantity String
+  unit     String
+
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recipeId])
+}
+
+model Rating {
+  id        String   @id @default(uuid())
+  score     Int      // 1 à 5
+  createdAt DateTime @default(now())
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recipeId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
+model PendingRecipe {
+  id              String   @id @default(uuid())
+  title           String
+  description     String
+  country         String
+  prepTime        Int
+  cookTime        Int
+  servings        Int
+  difficulty      Difficulty
+  type            DishType
+  diet            Diet[]
+  imageUrl        String?
+  instructions    String   @db.Text
+  ingredients     Json     // Stocké en JSON temporairement
+  status          PendingStatus @default(PENDING)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  authorId        String
+  author          User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+enum PendingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
