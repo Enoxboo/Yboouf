@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken');
-const prisma = require('../services/prisma.service');
+import jwt from 'jsonwebtoken';
+import prisma from '../services/prisma.service.js';
 
-const authenticateToken = async (req, res, next) => {
+export const authenticateToken = async (req, res, next) => {
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
@@ -39,14 +39,14 @@ const authenticateToken = async (req, res, next) => {
     }
 };
 
-const requireAdmin = (req, res, next) => {
+export const requireAdmin = (req, res, next) => {
     if (req.user.role !== 'ADMIN') {
         return res.status(403).json({ error: 'Admin access required' });
     }
     next();
 };
 
-const optionalAuth = async (req, res, next) => {
+export const optionalAuth = async (req, res, next) => {
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
@@ -68,12 +68,7 @@ const optionalAuth = async (req, res, next) => {
             }
         }
     } catch (error) {
+        // Ignore
     }
     next();
-};
-
-module.exports = {
-    authenticateToken,
-    requireAdmin,
-    optionalAuth,
 };

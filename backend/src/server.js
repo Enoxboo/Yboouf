@@ -1,12 +1,18 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 
-const authRoutes = require('./routes/auth.routes');
-const recipesRoutes = require('./routes/recipes.routes');
-const usersRoutes = require('./routes/users.routes');
-const adminRoutes = require('./routes/admin.routes');
+dotenv.config();
+
+import authRoutes from './routes/auth.routes.js';
+import recipesRoutes from './routes/recipes.routes.js';
+import usersRoutes from './routes/users.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;

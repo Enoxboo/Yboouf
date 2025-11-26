@@ -1,13 +1,16 @@
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const uploadDir = path.join(__dirname, '../../uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Configuration du stockage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, uploadDir);
@@ -40,7 +43,7 @@ const upload = multer({
     fileFilter: fileFilter,
 });
 
-const deleteImage = (imagePath) => {
+export const deleteImage = (imagePath) => {
     if (!imagePath) return;
 
     const filename = path.basename(imagePath);
@@ -51,8 +54,5 @@ const deleteImage = (imagePath) => {
     }
 };
 
-module.exports = {
-    uploadSingle: upload.single('image'),
-    uploadMultiple: upload.array('images', 5),
-    deleteImage,
-};
+export const uploadSingle = upload.single('image');
+export const uploadMultiple = upload.array('images', 5);
