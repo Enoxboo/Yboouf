@@ -26,11 +26,9 @@ app.use('/api/recipes', recipesRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/admin', adminRoutes);
 
-
 app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
 });
-
 
 app.use((err, req, res, next) => {
     console.error('Error:', err);
