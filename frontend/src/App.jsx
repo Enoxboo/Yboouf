@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/common/Navbar';
 import Home from './pages/Home';
+import Footer from './components/common/Footer';
 
 function App() {
     return (
@@ -13,6 +14,7 @@ function App() {
                         <Route path="/" element={<Home />} />
                     </Routes>
                 </main>
+                <Footer />
             </div>
         </AuthProvider>
     );

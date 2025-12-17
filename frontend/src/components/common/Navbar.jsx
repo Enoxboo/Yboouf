@@ -1,6 +1,6 @@
 import {Link, useNavigate} from 'react-router-dom';
 import {useAuth} from '../../context/AuthContext';
-import {ChefHat, User, LogOut, Plus} from 'lucide-react';
+import logo from '../../assets/logo_yboouf.png';
 
 const Navbar = () => {
     const {user, logout} = useAuth();
@@ -12,13 +12,12 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="bg-white shadow-md">
+        <nav className="shadow-md" style={{backgroundColor: '#095d63'}}>
             <div className="container mx-auto px-4">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
                     <Link to="/" className="flex items-center space-x-2 text-primary font-bold text-xl">
-                        <ChefHat size={28}/>
-                        <span>World Recipes</span>
+                        <img src={logo} alt="logo_yboouf" className="h-30 object-contain"/>
                     </Link>
 
                     {/* Navigation */}

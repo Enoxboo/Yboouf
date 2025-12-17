@@ -1,31 +1,28 @@
 import { useState } from 'react';
-import { useRecipes } from '../hooks/useRecipes';
 import RecipeCard from '../components/recipe/RecipeCard';
+import PopularRecipesCarousel from '../components/recipe/PopularRecipesCarousel';
 import { Search } from 'lucide-react';
+import { mockRecipes } from '../data/mockRecipes';
 
 const Home = () => {
     const [search, setSearch] = useState('');
     const [country, setCountry] = useState('');
     const [type, setType] = useState('');
 
-    const { data: recipes, isLoading, error } = useRecipes({
-        search,
-        country,
-        type
-    });
-
-
     return (
         <div>
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-primary to-secondary text-white rounded-lg p-12 mb-8">
                 <h1 className="text-4xl font-bold mb-4">
-                    Découvrez les saveurs du monde
+                    Des saveurs du monde délicieuses,
                 </h1>
                 <p className="text-xl">
-                    Des milliers de recettes authentiques à portée de main
+                    et votre recette favorite à portée de main.
                 </p>
             </div>
+
+            {/* Carousel des recettes populaires */}
+            <PopularRecipesCarousel recipes={mockRecipes} />
 
             {/* Filtres */}
             <div className="card mb-8">
@@ -48,10 +45,10 @@ const Home = () => {
                     >
                         <option value="">Tous les pays</option>
                         <option value="France">France</option>
-                        <option value="Italy">Italie</option>
-                        <option value="Japan">Japon</option>
-                        <option value="Mexico">Mexique</option>
-                        {/* Ajouter plus de pays */}
+                        <option value="Italie">Italie</option>
+                        <option value="Japon">Japon</option>
+                        <option value="Maroc">Maroc</option>
+                        <option value="Espagne">Espagne</option>
                     </select>
 
                     <select
@@ -67,18 +64,15 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* Liste des recettes */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recipes?.map((recipe) => (
+            {/* Titre pour toutes les recettes */}
+            <h2 className="text-2xl font-bold mb-6">Toutes les recettes</h2>
+
+            {/* Liste des recettes - Grid 4 colonnes */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {mockRecipes.map((recipe) => (
                     <RecipeCard key={recipe.id} recipe={recipe} />
                 ))}
             </div>
-
-            {recipes?.length === 0 && (
-                <div className="text-center py-12 text-gray-500">
-                    Aucune recette trouvée 😢
-                </div>
-            )}
         </div>
     );
 };
