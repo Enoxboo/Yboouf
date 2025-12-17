@@ -1,4 +1,5 @@
 import 'dotenv/config'
+// @ts-ignore
 import { defineConfig, env } from 'prisma/config'
 
 export default defineConfig({
