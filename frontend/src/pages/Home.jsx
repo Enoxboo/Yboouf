@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import RecipeCard from '../components/recipe/RecipeCard';
 import PopularRecipesCarousel from '../components/recipe/PopularRecipesCarousel';
-import { Search } from 'lucide-react';
-import { useRecipes, useRecipeFilters } from '../hooks/useRecipes';
+import SearchBar from '../components/common/SearchBar';
+import {useRecipes, useRecipeFilters} from '../hooks/useRecipes';
 
 const Home = () => {
     const [search, setSearch] = useState('');
@@ -11,7 +11,7 @@ const Home = () => {
     const [diet, setDiet] = useState('');
     const [ingredient, setIngredient] = useState('');
 
-    const { data, isLoading, error } = useRecipes({
+    const {data, isLoading, error} = useRecipes({
         search,
         country,
         type,
@@ -19,14 +19,14 @@ const Home = () => {
         ingredient,
     });
 
-    const { data: filters, isLoading: filtersLoading } = useRecipeFilters();
+    const {data: filters, isLoading: filtersLoading} = useRecipeFilters();
 
     const recipes = data?.recipes || [];
 
-    if (isLoading || filtersLoading) {
+    if (filtersLoading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
-                <div className="text-xl">Chargement des recettes...</div>
+                <div className="text-xl">Chargement des filtres...</div>
             </div>
         );
     }
@@ -71,28 +71,25 @@ const Home = () => {
             </div>
 
             {/* Carousel des recettes populaires */}
-            {recipes.length > 0 && (
-                <PopularRecipesCarousel recipes={recipes.slice(0, 10)} />
+            {!search && recipes.length > 0 && (
+                <PopularRecipesCarousel recipes={recipes.slice(0, 10)}/>
             )}
 
             {/* Filtres */}
             <div className="card mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Rechercher une recette..."
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2">
+                    <div className="md:col-span-1 lg:col-span-1">
+                        <SearchBar
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                            onChange={setSearch}
+                            isLoading={isLoading}
                         />
                     </div>
 
                     <select
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
-                        className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                        className="px-3 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none hover:border-primary/50"
                     >
                         <option value="">Tous les pays</option>
                         {filters?.countries?.map((c) => (
@@ -103,7 +100,7 @@ const Home = () => {
                     <select
                         value={type}
                         onChange={(e) => setType(e.target.value)}
-                        className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                        className="px-3 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none hover:border-primary/50"
                     >
                         <option value="">Tous les types</option>
                         {filters?.types?.map((t) => (
@@ -114,7 +111,7 @@ const Home = () => {
                     <select
                         value={ingredient}
                         onChange={(e) => setIngredient(e.target.value)}
-                        className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                        className="px-3 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none hover:border-primary/50"
                     >
                         <option value="">Tous les ingrédients</option>
                         {filters?.ingredients?.map((i) => (
@@ -125,7 +122,7 @@ const Home = () => {
                     <select
                         value={diet}
                         onChange={(e) => setDiet(e.target.value)}
-                        className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                        className="px-3 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none hover:border-primary/50"
                     >
                         <option value="">Tous les régimes</option>
                         {filters?.diets?.map((d) => (
@@ -135,18 +132,39 @@ const Home = () => {
                 </div>
             </div>
 
+
             {/* Titre pour toutes les recettes */}
-            <h2 className="text-2xl font-bold mb-6">Toutes les recettes</h2>
+            <h2 className="text-2xl font-bold mb-6">
+                {search ? `Résultats pour "${search}"` : 'Toutes les recettes'}
+            </h2>
 
             {/* Liste des recettes */}
-            {recipes.length === 0 ? (
+            {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[...Array(8)].map((_, i) => (
+                        <div key={i} className="card animate-pulse">
+                            <div className="h-48 bg-gray-200 rounded-lg mb-4"></div>
+                            <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                        </div>
+                    ))}
+                </div>
+            ) : recipes.length === 0 ? (
                 <div className="text-center py-12">
                     <p className="text-gray-600 text-lg">Aucune recette trouvée</p>
+                    {search && (
+                        <button
+                            onClick={() => setSearch('')}
+                            className="mt-4 text-primary hover:underline"
+                        >
+                            Réinitialiser la recherche
+                        </button>
+                    )}
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {recipes.map((recipe) => (
-                        <RecipeCard key={recipe.id} recipe={recipe} />
+                        <RecipeCard key={recipe.id} recipe={recipe}/>
                     ))}
                 </div>
             )}
