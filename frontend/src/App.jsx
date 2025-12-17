@@ -5,6 +5,7 @@ import Navbar from './components/common/Navbar';
 import Home from './pages/Home';
 import RecipePage from './pages/RecipePage';
 import Footer from './components/common/Footer';
+import Auth from './pages/Auth';
 
 function App() {
     return (
@@ -16,6 +17,7 @@ function App() {
                         <Routes>
                             <Route path="/" element={<Home />} />
                             <Route path="/recipe/:id" element={<RecipePage />} />
+                            <Route path="/auth" element={<Auth />} />
                         </Routes>
                     </main>
                     <Footer />
