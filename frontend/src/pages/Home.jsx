@@ -2,7 +2,7 @@ import { useState } from 'react';
 import RecipeCard from '../components/recipe/RecipeCard';
 import PopularRecipesCarousel from '../components/recipe/PopularRecipesCarousel';
 import { Search } from 'lucide-react';
-import { useRecipes } from '../hooks/useRecipes';
+import { useRecipes, useRecipeFilters } from '../hooks/useRecipes';
 
 const Home = () => {
     const [search, setSearch] = useState('');
@@ -15,9 +15,11 @@ const Home = () => {
         type,
     });
 
+    const { data: filters, isLoading: filtersLoading } = useRecipeFilters();
+
     const recipes = data?.recipes || [];
 
-    if (isLoading) {
+    if (isLoading || filtersLoading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
                 <div className="text-xl">Chargement des recettes...</div>
@@ -34,6 +36,14 @@ const Home = () => {
             </div>
         );
     }
+
+    const typeLabels = {
+        STARTER: 'Entrée',
+        MAIN: 'Plat principal',
+        DESSERT: 'Dessert',
+        SNACK: 'Snack',
+        DRINK: 'Boisson'
+    };
 
     return (
         <div>
@@ -72,11 +82,9 @@ const Home = () => {
                         className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
                     >
                         <option value="">Tous les pays</option>
-                        <option value="France">France</option>
-                        <option value="Italie">Italie</option>
-                        <option value="Japon">Japon</option>
-                        <option value="Maroc">Maroc</option>
-                        <option value="Espagne">Espagne</option>
+                        {filters?.countries?.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                        ))}
                     </select>
 
                     <select
@@ -85,11 +93,9 @@ const Home = () => {
                         className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
                     >
                         <option value="">Tous les types</option>
-                        <option value="STARTER">Entrée</option>
-                        <option value="MAIN">Plat principal</option>
-                        <option value="DESSERT">Dessert</option>
-                        <option value="SNACK">Snack</option>
-                        <option value="DRINK">Boisson</option>
+                        {filters?.types?.map((t) => (
+                            <option key={t} value={t}>{typeLabels[t]}</option>
+                        ))}
                     </select>
                 </div>
             </div>

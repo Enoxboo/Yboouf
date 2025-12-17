@@ -3,6 +3,7 @@ import { body } from 'express-validator';
 import {
     getAllRecipes,
     getRecipeById,
+    getRecipeFilters,
     createRecipe,
     updateRecipe,
     deleteRecipe,
@@ -47,6 +48,7 @@ const recipeValidation = [
         .withMessage('Instructions must be at least 20 characters'),
 ];
 
+router.get('/filters', getRecipeFilters);
 router.get('/', optionalAuth, getAllRecipes);
 router.get('/:id', optionalAuth, getRecipeById);
 
