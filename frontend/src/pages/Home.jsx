@@ -2,12 +2,38 @@ import { useState } from 'react';
 import RecipeCard from '../components/recipe/RecipeCard';
 import PopularRecipesCarousel from '../components/recipe/PopularRecipesCarousel';
 import { Search } from 'lucide-react';
-import { mockRecipes } from '../data/mockRecipes';
+import { useRecipes } from '../hooks/useRecipes';
 
 const Home = () => {
     const [search, setSearch] = useState('');
     const [country, setCountry] = useState('');
     const [type, setType] = useState('');
+
+    const { data, isLoading, error } = useRecipes({
+        search,
+        country,
+        type,
+    });
+
+    const recipes = data?.recipes || [];
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="text-xl">Chargement des recettes...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="text-xl text-red-600">
+                    Erreur lors du chargement des recettes
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div>
@@ -22,7 +48,9 @@ const Home = () => {
             </div>
 
             {/* Carousel des recettes populaires */}
-            <PopularRecipesCarousel recipes={mockRecipes} />
+            {recipes.length > 0 && (
+                <PopularRecipesCarousel recipes={recipes.slice(0, 10)} />
+            )}
 
             {/* Filtres */}
             <div className="card mb-8">
@@ -60,6 +88,8 @@ const Home = () => {
                         <option value="STARTER">Entrée</option>
                         <option value="MAIN">Plat principal</option>
                         <option value="DESSERT">Dessert</option>
+                        <option value="SNACK">Snack</option>
+                        <option value="DRINK">Boisson</option>
                     </select>
                 </div>
             </div>
@@ -67,12 +97,18 @@ const Home = () => {
             {/* Titre pour toutes les recettes */}
             <h2 className="text-2xl font-bold mb-6">Toutes les recettes</h2>
 
-            {/* Liste des recettes - Grid 4 colonnes */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {mockRecipes.map((recipe) => (
-                    <RecipeCard key={recipe.id} recipe={recipe} />
-                ))}
-            </div>
+            {/* Liste des recettes */}
+            {recipes.length === 0 ? (
+                <div className="text-center py-12">
+                    <p className="text-gray-600 text-lg">Aucune recette trouvée</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {recipes.map((recipe) => (
+                        <RecipeCard key={recipe.id} recipe={recipe} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
