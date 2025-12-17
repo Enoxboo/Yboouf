@@ -1,19 +1,60 @@
+import { useState, useEffect } from 'react';
 import { Clock, Users, ChefHat, Heart, Share2, ArrowLeft, Star } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useState } from 'react';
-import { useRecipe } from '../hooks/useRecipes';
 
 const RecipePage = () => {
     const navigate = useNavigate();
     const { id } = useParams();
+    const [recipe, setRecipe] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [isFavorite, setIsFavorite] = useState(false);
 
-    // Récupération de la recette avec React Query + Axios
-    const { data: recipe, isLoading: loading, error } = useRecipe(id);
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-    // Même logique que RecipeCard pour les URLs d'images
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    const API_BASE_URL = API_URL.replace('/api', '');
+    useEffect(() => {
+        const fetchRecipe = async () => {
+            setLoading(true);
+            setError(null);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/recipes/${id}`);
+
+                if (!response.ok) {
+                    setError(`Erreur HTTP: ${response.status}`);
+                    setLoading(false);
+                    return;
+                }
+
+                const data = await response.json();
+                let recipeData = null;
+
+                if (data.recipes && Array.isArray(data.recipes)) {
+                    recipeData = data.recipes[0];
+                } else if (data.recipe) {
+                    recipeData = data.recipe;
+                } else if (data.id) {
+                    recipeData = data;
+                } else if (Array.isArray(data)) {
+                    recipeData = data[0];
+                }
+
+                if (!recipeData) {
+                    setError('Format de données non reconnu');
+                } else {
+                    setRecipe(recipeData);
+                }
+            } catch (err) {
+                setError(err.message || 'Erreur lors du chargement');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (id) {
+            fetchRecipe();
+        }
+    }, [id, API_BASE_URL]);
 
     const getImageUrl = (imageUrl) => {
         if (!imageUrl) return null;
@@ -23,20 +64,18 @@ const RecipePage = () => {
 
     const getDifficultyLabel = (difficulty) => {
         const levels = {
-            EASY: 'Facile',
-            MEDIUM: 'Moyen',
-            HARD: 'Difficile',
+            'EASY': 'Facile',
+            'MEDIUM': 'Moyen',
+            'HARD': 'Difficile'
         };
         return levels[difficulty] || difficulty;
     };
 
     const getTypeLabel = (type) => {
         const types = {
-            MAIN: 'Plat principal',
-            STARTER: 'Entrée',
-            DESSERT: 'Dessert',
-            SNACK: 'Snack',
-            DRINK: 'Boisson',
+            'MAIN': 'Plat principal',
+            'STARTER': 'Entrée',
+            'DESSERT': 'Dessert'
         };
         return types[type] || type;
     };
@@ -44,9 +83,9 @@ const RecipePage = () => {
     const parseInstructions = (instructions) => {
         if (!instructions) return [];
         return instructions
-            .split(/\r?\n/)
-            .map((step) => step.trim())
-            .filter((step) => step !== '');
+            .split(/\\n|\n/)
+            .map(step => step.trim())
+            .filter(step => step !== '');
     };
 
     const formatDate = (dateString) => {
@@ -54,7 +93,7 @@ const RecipePage = () => {
         return date.toLocaleDateString('fr-FR', {
             year: 'numeric',
             month: 'long',
-            day: 'numeric',
+            day: 'numeric'
         });
     };
 
@@ -72,11 +111,12 @@ const RecipePage = () => {
             <div className="text-center py-12">
                 <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto mb-6">
                     <p className="text-red-800 font-semibold mb-2">❌ Erreur</p>
-                    <p className="text-red-600">
-                        {error.message || 'Erreur lors du chargement de la recette'}
-                    </p>
+                    <p className="text-red-600">{error}</p>
                 </div>
-                <button onClick={() => navigate('/')} className="btn-primary">
+                <button
+                    onClick={() => navigate('/')}
+                    className="btn-primary"
+                >
                     Retour à l'accueil
                 </button>
             </div>
@@ -87,7 +127,10 @@ const RecipePage = () => {
         return (
             <div className="text-center py-12">
                 <p className="text-xl text-gray-600 mb-4">Recette non trouvée</p>
-                <button onClick={() => navigate('/')} className="btn-primary">
+                <button
+                    onClick={() => navigate('/')}
+                    className="btn-primary"
+                >
                     Retour à l'accueil
                 </button>
             </div>
@@ -115,18 +158,11 @@ const RecipePage = () => {
                                 src={imageUrl}
                                 alt={recipe.title}
                                 className="w-full h-full object-cover object-center rounded-lg shadow-lg"
-                                onError={(e) => {
-                                    e.target.src = '/placeholder-recipe.jpg';
-                                }}
                             />
                         </div>
                     )}
 
-                    <div
-                        className={`p-8 lg:p-12 flex flex-col justify-center ${
-                            !imageUrl ? 'lg:col-span-2' : ''
-                        }`}
-                    >
+                    <div className={`p-8 lg:p-12 flex flex-col justify-center ${!imageUrl ? 'lg:col-span-2' : ''}`}>
                         <div className="flex flex-wrap gap-2 mb-4">
                             <span className="px-3 py-1 bg-white/20 rounded-full text-sm backdrop-blur-sm">
                                 {recipe.country}
@@ -134,15 +170,11 @@ const RecipePage = () => {
                             <span className="px-3 py-1 bg-white/20 rounded-full text-sm backdrop-blur-sm">
                                 {getTypeLabel(recipe.type)}
                             </span>
-                            {recipe.diet &&
-                                recipe.diet.map((dietType, index) => (
-                                    <span
-                                        key={index}
-                                        className="px-3 py-1 bg-white/20 rounded-full text-sm backdrop-blur-sm"
-                                    >
-                                        {dietType}
-                                    </span>
-                                ))}
+                            {recipe.diet && recipe.diet.map((dietType, index) => (
+                                <span key={index} className="px-3 py-1 bg-white/20 rounded-full text-sm backdrop-blur-sm">
+                                    {dietType}
+                                </span>
+                            ))}
                         </div>
 
                         <h1 className="text-4xl font-bold mb-4">{recipe.title}</h1>
@@ -153,9 +185,7 @@ const RecipePage = () => {
                                 <Clock size={20} />
                                 <div className="flex flex-col">
                                     <span className="text-sm opacity-80">Temps total</span>
-                                    <span className="font-semibold">
-                                        {recipe.prepTime + recipe.cookTime} min
-                                    </span>
+                                    <span className="font-semibold">{recipe.prepTime + recipe.cookTime} min</span>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -169,9 +199,7 @@ const RecipePage = () => {
                                 <ChefHat size={20} />
                                 <div className="flex flex-col">
                                     <span className="text-sm opacity-80">Difficulté</span>
-                                    <span className="font-semibold">
-                                        {getDifficultyLabel(recipe.difficulty)}
-                                    </span>
+                                    <span className="font-semibold">{getDifficultyLabel(recipe.difficulty)}</span>
                                 </div>
                             </div>
                         </div>
@@ -181,11 +209,9 @@ const RecipePage = () => {
                                 <div className="flex items-center gap-2">
                                     <Star size={20} fill="currentColor" />
                                     <div className="flex flex-col">
-                                        <span className="text-xl font-bold">
-                                            {recipe.averageRating.toFixed(1)}/5
-                                        </span>
+                                        <span className="text-xl font-bold">{recipe.averageRating.toFixed(1)}/5</span>
                                         <span className="text-sm opacity-80">
-                                            {recipe.ratingsCount || 0} avis
+                                            {recipe._count?.ratings || 0} avis
                                         </span>
                                     </div>
                                 </div>
@@ -236,15 +262,13 @@ const RecipePage = () => {
                         {recipe.ingredients && recipe.ingredients.length > 0 ? (
                             <ul className="space-y-3">
                                 {recipe.ingredients.map((ingredient) => (
-                                    <li
-                                        key={ingredient.id}
-                                        className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors"
-                                    >
+                                    <li key={ingredient.id} className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
                                         <span className="text-secondary mt-1 text-lg">•</span>
                                         <span className="flex-1">
                                             <span className="font-semibold text-primary">
                                                 {ingredient.quantity} {ingredient.unit}
-                                            </span>{' '}
+                                            </span>
+                                            {' '}
                                             <span className="text-gray-700">{ingredient.name}</span>
                                         </span>
                                     </li>
@@ -263,18 +287,14 @@ const RecipePage = () => {
                                             <Heart size={16} className="text-red-500" />
                                             Favoris
                                         </span>
-                                        <span className="font-semibold">
-                                            {recipe._count.favorites}
-                                        </span>
+                                        <span className="font-semibold">{recipe._count.favorites}</span>
                                     </div>
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-gray-600 flex items-center gap-2">
                                             <Star size={16} className="text-yellow-500" />
                                             Notes
                                         </span>
-                                        <span className="font-semibold">
-                                            {recipe._count.ratings}
-                                        </span>
+                                        <span className="font-semibold">{recipe._count.ratings}</span>
                                     </div>
                                 </div>
                             </div>
@@ -283,12 +303,9 @@ const RecipePage = () => {
                         {recipe.createdAt && (
                             <div className="mt-6 pt-6 border-t border-gray-200 text-xs text-gray-500">
                                 <p>Créée le {formatDate(recipe.createdAt)}</p>
-                                {recipe.updatedAt &&
-                                    recipe.updatedAt !== recipe.createdAt && (
-                                        <p className="mt-1">
-                                            Modifiée le {formatDate(recipe.updatedAt)}
-                                        </p>
-                                    )}
+                                {recipe.updatedAt && recipe.updatedAt !== recipe.createdAt && (
+                                    <p className="mt-1">Modifiée le {formatDate(recipe.updatedAt)}</p>
+                                )}
                             </div>
                         )}
                     </div>
@@ -312,32 +329,29 @@ const RecipePage = () => {
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-gray-500 italic">
-                                Pas d'instructions disponibles
-                            </p>
+                            <p className="text-gray-500 italic">Pas d'instructions disponibles</p>
                         )}
                     </div>
 
-                    <div className="card bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/10">
+                    <div className="card">
                         <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                             <Clock className="text-primary" size={22} />
                             Temps de préparation détaillé
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-white/50 rounded-lg p-4">
+                            <div className="bg-white/50 dark:bg-transparent rounded-lg p-4">
                                 <p className="text-sm text-gray-600 mb-1">Préparation</p>
-                                <p className="text-2xl font-bold text-primary">
-                                    {recipe.prepTime} min
-                                </p>
+                                <p className="text-2xl font-bold text-gray-900">{recipe.prepTime} min</p>
                             </div>
-                            <div className="bg-white/50 rounded-lg p-4">
+                            <div className="bg-white/50 dark:bg-transparent rounded-lg p-4">
                                 <p className="text-sm text-gray-600 mb-1">Cuisson</p>
-                                <p className="text-2xl font-bold text-secondary">
-                                    {recipe.cookTime} min
-                                </p>
+                                <p className="text-2xl font-bold text-gray-900">{recipe.cookTime} min</p>
                             </div>
                         </div>
                     </div>
+
+
+
                 </div>
             </div>
         </div>

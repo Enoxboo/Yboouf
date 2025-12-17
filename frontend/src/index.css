@@ -6,8 +6,41 @@
 }
 
 @layer base {
+    html {
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
     body {
         @apply bg-gray-50 text-gray-900;
+    }
+
+    html.dark body {
+        @apply bg-gray-900 text-white;
+    }
+
+    /* Dark mode - Tous les titres */
+    html.dark h1,
+    html.dark h2,
+    html.dark h3,
+    html.dark h4,
+    html.dark h5,
+    html.dark h6 {
+        color: white !important;
+    }
+
+    /* Dark mode - Tous les textes */
+    html.dark p,
+    html.dark span,
+    html.dark li,
+    html.dark label {
+        color: white !important;
+    }
+
+    /* Textes gris en mode clair restent lisibles en dark */
+    html.dark .text-gray-600,
+    html.dark .text-gray-700,
+    html.dark .text-gray-900 {
+        color: white !important;
     }
 }
 
@@ -20,7 +53,15 @@
         @apply bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition;
     }
 
+    html.dark .btn-secondary {
+        @apply bg-gray-700 text-white hover:bg-gray-600;
+    }
+
     .card {
         @apply bg-white rounded-lg shadow-md p-6;
+    }
+
+    html.dark .card {
+        @apply bg-gray-800 border border-gray-700;
     }
 }

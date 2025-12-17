@@ -1,9 +1,11 @@
-import {Link, useNavigate} from 'react-router-dom';
-import {useAuth} from '../../context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { Plus, User, LogOut } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 import logo from '../../assets/logo_yboouf.png';
 
 const Navbar = () => {
-    const {user, logout} = useAuth();
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -12,7 +14,7 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="shadow-md" style={{backgroundColor: '#095d63'}}>
+        <nav className="fixed top-0 left-0 right-0 z-50 shadow-md bg-[#095d63] dark:bg-gray-800 transition-colors duration-200">
             <div className="container mx-auto px-4">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
@@ -22,6 +24,9 @@ const Navbar = () => {
 
                     {/* Navigation */}
                     <div className="flex items-center space-x-4">
+                        {/* Bouton Dark Mode */}
+                        <ThemeToggle />
+
                         {user ? (
                             <>
                                 <Link to="/add-recipe" className="btn-primary flex items-center space-x-2">
@@ -30,14 +35,14 @@ const Navbar = () => {
                                 </Link>
 
                                 <Link to="/profile"
-                                      className="flex items-center space-x-2 text-gray-700 hover:text-primary">
+                                      className="flex items-center space-x-2 text-white dark:text-gray-300 hover:text-gray-200 dark:hover:text-white transition-colors">
                                     <User size={20}/>
                                     <span>{user.username}</span>
                                 </Link>
 
                                 <button
                                     onClick={handleLogout}
-                                    className="flex items-center space-x-2 text-gray-700 hover:text-red-500"
+                                    className="flex items-center space-x-2 text-white dark:text-gray-300 hover:text-red-400 dark:hover:text-red-500 transition-colors"
                                 >
                                     <LogOut size={20}/>
                                     <span>Déconnexion</span>
