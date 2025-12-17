@@ -370,3 +370,29 @@ export const deleteRecipe = async (req, res) => {
         res.status(500).json({ error: 'Failed to delete recipe' });
     }
 };
+
+export const getRecipeFilters = async (req, res) => {
+    try {
+        const [countries, types] = await Promise.all([
+            prisma.recipe.findMany({
+                where: { isPublished: true },
+                select: { country: true },
+                distinct: ['country'],
+                orderBy: { country: 'asc' }
+            }),
+            prisma.recipe.findMany({
+                where: { isPublished: true },
+                select: { type: true },
+                distinct: ['type']
+            })
+        ]);
+
+        res.json({
+            countries: countries.map(c => c.country),
+            types: types.map(t => t.type)
+        });
+    } catch (error) {
+        console.error('Get filters error:', error);
+        res.status(500).json({ error: 'Failed to fetch filters' });
+    }
+};

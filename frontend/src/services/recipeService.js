@@ -7,6 +7,11 @@ export const recipeService = {
         return response.data;
     },
 
+    getFilters: async () => {
+        const response = await api.get('/recipes/filters');
+        return response.data;
+    },
+
     getById: async (id) => {
         const response = await api.get(`/recipes/${id}`);
         return response.data;

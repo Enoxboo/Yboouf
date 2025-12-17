@@ -40,3 +40,11 @@ export const useToggleFavorite = () => {
         },
     });
 };
+
+export const useRecipeFilters = () => {
+    return useQuery({
+        queryKey: ['recipe-filters'],
+        queryFn: recipeService.getFilters,
+        staleTime: 5 * 60 * 1000,
+    });
+};
