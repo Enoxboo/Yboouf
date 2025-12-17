@@ -65,3 +65,16 @@
         @apply bg-gray-800 border border-gray-700;
     }
 }
+
+@keyframes progress {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.animate-progress {
+    animation: progress 1.5s ease-in-out infinite;
+}
