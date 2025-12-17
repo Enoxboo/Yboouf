@@ -3,7 +3,7 @@ import { deleteImage } from '../middlewares/upload.middleware.js';
 
 export const getAllRecipes = async (req, res) => {
     try {
-        const { search, country, type, diet, page = 1, limit = 12 } = req.query;
+        const { search, country, type, diet, ingredients, page = 1, limit = 12 } = req.query;
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
@@ -28,6 +28,14 @@ export const getAllRecipes = async (req, res) => {
 
         if (diet) {
             where.diet = { has: diet };
+        }
+
+        if (ingredients) {
+            where.ingredients = {
+                some: {
+                    name: { contains: ingredients, mode: 'insensitive' }
+                }
+            };
         }
 
         const [recipes, total] = await Promise.all([
@@ -373,7 +381,7 @@ export const deleteRecipe = async (req, res) => {
 
 export const getRecipeFilters = async (req, res) => {
     try {
-        const [countries, types] = await Promise.all([
+        const [countries, types, ingredients, diets] = await Promise.all([
             prisma.recipe.findMany({
                 where: { isPublished: true },
                 select: { country: true },
@@ -384,12 +392,25 @@ export const getRecipeFilters = async (req, res) => {
                 where: { isPublished: true },
                 select: { type: true },
                 distinct: ['type']
+            }),
+            prisma.ingredient.findMany({
+                select: { name: true },
+                distinct: ['name'],
+                orderBy: { name: 'asc' }
+            }),
+            prisma.recipe.findMany({
+                where: { isPublished: true },
+                select: { diet: true }
             })
         ]);
 
+        const uniqueDiets = [...new Set(diets.flatMap(r => r.diet))];
+
         res.json({
             countries: countries.map(c => c.country),
-            types: types.map(t => t.type)
+            types: types.map(t => t.type),
+            ingredients: ingredients.map(i => i.name),
+            diets: uniqueDiets.sort()
         });
     } catch (error) {
         console.error('Get filters error:', error);

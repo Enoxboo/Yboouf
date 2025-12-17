@@ -8,11 +8,15 @@ const Home = () => {
     const [search, setSearch] = useState('');
     const [country, setCountry] = useState('');
     const [type, setType] = useState('');
+    const [diet, setDiet] = useState('');
+    const [ingredient, setIngredient] = useState('');
 
     const { data, isLoading, error } = useRecipes({
         search,
         country,
         type,
+        diet,
+        ingredient,
     });
 
     const { data: filters, isLoading: filtersLoading } = useRecipeFilters();
@@ -45,6 +49,15 @@ const Home = () => {
         DRINK: 'Boisson'
     };
 
+    const dietLabels = {
+        VEGETARIAN: 'Végétarien',
+        VEGAN: 'Vegan',
+        GLUTEN_FREE: 'Sans gluten',
+        DAIRY_FREE: 'Sans lactose',
+        HALAL: 'Halal',
+        KOSHER: 'Casher'
+    };
+
     return (
         <div>
             {/* Hero Section */}
@@ -64,7 +77,7 @@ const Home = () => {
 
             {/* Filtres */}
             <div className="card mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                         <input
@@ -95,6 +108,28 @@ const Home = () => {
                         <option value="">Tous les types</option>
                         {filters?.types?.map((t) => (
                             <option key={t} value={t}>{typeLabels[t]}</option>
+                        ))}
+                    </select>
+
+                    <select
+                        value={ingredient}
+                        onChange={(e) => setIngredient(e.target.value)}
+                        className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                    >
+                        <option value="">Tous les ingrédients</option>
+                        {filters?.ingredients?.map((i) => (
+                            <option key={i} value={i}>{i}</option>
+                        ))}
+                    </select>
+
+                    <select
+                        value={diet}
+                        onChange={(e) => setDiet(e.target.value)}
+                        className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                    >
+                        <option value="">Tous les régimes</option>
+                        {filters?.diets?.map((d) => (
+                            <option key={d} value={d}>{dietLabels[d]}</option>
                         ))}
                     </select>
                 </div>
