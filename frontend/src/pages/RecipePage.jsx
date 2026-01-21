@@ -13,7 +13,7 @@ function RecipePage() {
                 setLoading(true);
                 setError(null);
 
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/recipes/${id}`, {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/recipes/${id}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }

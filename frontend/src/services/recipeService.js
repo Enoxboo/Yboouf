@@ -2,8 +2,16 @@ import api from './api';
 
 export const recipeService = {
     getAll: async (filters = {}) => {
-        const params = new URLSearchParams(filters).toString();
-        const response = await api.get(`/recipes?${params}`);
+        const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+            if (value !== '' && value !== null && value !== undefined) {
+                acc[key] = value;
+            }
+            return acc;
+        }, {});
+
+        const params = new URLSearchParams(cleanFilters).toString();
+        const url = params ? `/recipes?${params}` : '/recipes';
+        const response = await api.get(url);
         return response.data;
     },
 
