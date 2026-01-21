@@ -4,6 +4,8 @@ import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/common/Navbar';
 import Home from './pages/Home';
 import RecipePage from './pages/RecipePage';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import Footer from './components/common/Footer';
 
 function App() {
@@ -16,6 +18,8 @@ function App() {
                         <Routes>
                             <Route path="/" element={<Home />} />
                             <Route path="/recipe/:id" element={<RecipePage />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
                         </Routes>
                     </main>
                     <Footer />
