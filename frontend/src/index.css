@@ -11,70 +11,126 @@
     }
 
     body {
-        @apply bg-gray-50 text-gray-900;
+        background-color: rgb(249 250 251);
+        color: rgb(17 24 39);
     }
 
     html.dark body {
-        @apply bg-gray-900 text-white;
+        background-color: rgb(17 24 39);
+        color: white;
     }
 
-    /* Dark mode - Tous les titres */
+    h1, h2, h3, h4, h5, h6,
+    p, span, li, label, a {
+        color: rgb(17 24 39) !important;
+    }
+
     html.dark h1,
     html.dark h2,
     html.dark h3,
     html.dark h4,
     html.dark h5,
-    html.dark h6 {
-        color: white !important;
-    }
-
-    /* Dark mode - Tous les textes */
+    html.dark h6,
     html.dark p,
     html.dark span,
     html.dark li,
-    html.dark label {
+    html.dark label,
+    html.dark a {
         color: white !important;
     }
 
-    /* Textes gris en mode clair restent lisibles en dark */
+    .text-gray-300,
+    .text-gray-400,
+    .text-gray-600,
+    .text-gray-700,
+    .text-gray-900 {
+        color: rgb(17 24 39) !important;
+    }
+
+    html.dark .text-gray-300,
+    html.dark .text-gray-400,
     html.dark .text-gray-600,
     html.dark .text-gray-700,
     html.dark .text-gray-900 {
+        color: white !important;
+    }
+
+    input,
+    textarea,
+    select {
+        background-color: white !important;
+        color: rgb(17 24 39) !important;
+    }
+
+    html.dark input,
+    html.dark textarea,
+    html.dark select {
+        background-color: rgb(31 41 55) !important;
+        color: white !important;
+        border-color: rgb(75 85 99);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+        color: rgb(107 114 128) !important;
+    }
+
+    html.dark input::placeholder,
+    html.dark textarea::placeholder {
+        color: white !important;
+        opacity: 0.7;
+    }
+
+    footer p,
+    footer span,
+    footer a {
         color: white !important;
     }
 }
 
 @layer components {
     .btn-primary {
-        @apply bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition;
+        background-color: var(--color-primary);
+        color: white !important;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+        opacity: 0.9;
     }
 
     .btn-secondary {
-        @apply bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition;
+        background-color: rgb(229 231 235);
+        color: rgb(55 65 81) !important;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+        background-color: rgb(209 213 219);
     }
 
     html.dark .btn-secondary {
-        @apply bg-gray-700 text-white hover:bg-gray-600;
+        background-color: rgb(55 65 81);
+        color: white !important;
+    }
+
+    html.dark .btn-secondary:hover {
+        background-color: rgb(75 85 99);
     }
 
     .card {
-        @apply bg-white rounded-lg shadow-md p-6;
+        background-color: white !important;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        padding: 1.5rem;
     }
 
     html.dark .card {
-        @apply bg-gray-800 border border-gray-700;
+        background-color: rgb(31 41 55) !important;
+        border: 1px solid rgb(55 65 81);
     }
-}
-
-@keyframes progress {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(100%);
-    }
-}
-
-.animate-progress {
-    animation: progress 1.5s ease-in-out infinite;
 }

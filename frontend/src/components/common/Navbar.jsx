@@ -50,11 +50,8 @@ const Navbar = () => {
                             </>
                         ) : (
                             <>
-                                <Link to="/login" className="btn-secondary">
-                                    Connexion
-                                </Link>
-                                <Link to="/register" className="btn-primary">
-                                    Inscription
+                                <Link to="/auth" className="btn-secondary">
+                                    Connexion/Inscription
                                 </Link>
                             </>
                         )}

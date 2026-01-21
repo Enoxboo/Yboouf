@@ -16,7 +16,7 @@ const ThemeToggle = () => {
                 }`}
             >
                 {isDark ? (
-                    <Moon className="text-gray-700" size={14} />
+                    <Moon className="text-gray-800" size={14} />
                 ) : (
                     <Sun className="text-yellow-500" size={14} />
                 )}
@@ -24,7 +24,7 @@ const ThemeToggle = () => {
 
             <div className="absolute inset-0 flex items-center justify-between px-2">
                 <Sun className="text-yellow-400 opacity-70" size={14} />
-                <Moon className="text-gray-200 opacity-70" size={14} />
+                <Moon className="text-gray-400 opacity-70" size={14} />
             </div>
         </button>
     );
