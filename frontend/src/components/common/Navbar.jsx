@@ -1,11 +1,11 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { Plus, User, LogOut } from 'lucide-react';
+import {Link, useNavigate} from 'react-router-dom';
+import {useAuth} from '../../context/AuthContext';
+import {Plus, User, LogOut} from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import logo from '../../assets/logo_yboouf.png';
 
 const Navbar = () => {
-    const { user, logout } = useAuth();
+    const {user, logout} = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -14,7 +14,8 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 shadow-md bg-[#095d63] dark:bg-gray-800 transition-colors duration-200">
+        <nav
+            className="fixed top-0 left-0 right-0 z-50 shadow-md bg-[#095d63] dark:bg-gray-800 transition-colors duration-200">
             <div className="container mx-auto px-4">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
@@ -25,7 +26,7 @@ const Navbar = () => {
                     {/* Navigation */}
                     <div className="flex items-center space-x-4">
                         {/* Bouton Dark Mode */}
-                        <ThemeToggle />
+                        <ThemeToggle/>
 
                         {user ? (
                             <>
@@ -49,11 +50,20 @@ const Navbar = () => {
                                 </button>
                             </>
                         ) : (
-                            <>
-                                <Link to="/auth" className="btn-secondary">
-                                    Connexion/Inscription
+                            <div className="flex items-center gap-3">
+                                <Link
+                                    to="/login"
+                                    className="px-4 py-2 text-primary font-medium hover:bg-gray-100 rounded-lg transition-colors"
+                                >
+                                    Connexion
                                 </Link>
-                            </>
+                                <Link
+                                    to="/register"
+                                    className="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark transition-colors"
+                                >
+                                    Inscription
+                                </Link>
+                            </div>
                         )}
                     </div>
                 </div>

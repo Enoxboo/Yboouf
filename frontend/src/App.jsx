@@ -18,9 +18,9 @@ function App() {
                         <Routes>
                             <Route path="/" element={<Home />} />
                             <Route path="/recipe/:id" element={<RecipePage />} />
-                        </Routes>
                             <Route path="/login" element={<Login />} />
                             <Route path="/register" element={<Register />} />
+                        </Routes>
                     </main>
                     <Footer />
                 </div>
