@@ -46,6 +46,13 @@ export const requireAdmin = (req, res, next) => {
     next();
 };
 
+export const requireModerator = (req, res, next) => {
+    if (req.user.role !== 'MODERATOR' && req.user.role !== 'ADMIN') {
+        return res.status(403).json({ error: 'Moderator or Admin access required' });
+    }
+    next();
+};
+
 export const optionalAuth = async (req, res, next) => {
     try {
         const authHeader = req.headers['authorization'];

@@ -8,54 +8,63 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String   @id @default(cuid())
   username  String   @unique
+  email     String   @unique
   password  String
   role      Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  recipes       Recipe[]
-  favorites     Favorite[]
-  ratings       Rating[]
-  comments      Comment[]
-  pendingRecipes PendingRecipe[]
+  recipes          Recipe[]
+  pendingRecipes   PendingRecipe[]
+  favorites        Favorite[]
+  ratings          Rating[]
+  comments         Comment[]
+  moderatedRecipes Recipe[]        @relation("ModeratedBy")
 }
 
 enum Role {
   USER
+  MODERATOR
   ADMIN
 }
 
 model Recipe {
-  id              String   @id @default(uuid())
-  title           String
-  description     String
-  country         String
-  prepTime        Int
-  cookTime        Int
-  servings        Int
-  difficulty      Difficulty
-  type            DishType
-  diet            Diet[]
-  imageUrl        String?
-  instructions    String   @db.Text
-  isPublished     Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id           String     @id @default(cuid())
+  title        String
+  description  String
+  country      String
+  prepTime     Int
+  cookTime     Int
+  servings     Int
+  difficulty   Difficulty
+  type         RecipeType
+  diet         Diet[]
+  instructions String     @db.Text
+  imageUrl     String?
 
-  authorId        String
-  author          User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  // Champs de modération
+  status         RecipeStatus @default(PENDING)
+  isPublished    Boolean      @default(false)
+  moderationNote String?      @db.Text
+  moderatedAt    DateTime?
+  moderatedById  String?
 
-  ingredients     Ingredient[]
-  favorites       Favorite[]
-  ratings         Rating[]
-  comments        Comment[]
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@index([country])
-  @@index([type])
+  author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  moderatedBy User?        @relation("ModeratedBy", fields: [moderatedById], references: [id])
+  ingredients Ingredient[]
+  favorites   Favorite[]
+  ratings     Rating[]
+  comments    Comment[]
+
   @@index([authorId])
+  @@index([status])
+  @@index([isPublished])
 }
 
 enum Difficulty {
@@ -64,7 +73,7 @@ enum Difficulty {
   HARD
 }
 
-enum DishType {
+enum RecipeType {
   STARTER
   MAIN
   DESSERT
@@ -95,8 +104,8 @@ model Favorite {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
 
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   recipeId String
   recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
@@ -106,11 +115,11 @@ model Favorite {
 
 model Rating {
   id        String   @id @default(uuid())
-  score     Int      // 1 à 5
+  score     Int // 1 à 5
   createdAt DateTime @default(now())
 
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   recipeId String
   recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
@@ -124,36 +133,37 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   recipeId String
   recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model PendingRecipe {
-  id              String   @id @default(uuid())
-  title           String
-  description     String
-  country         String
-  prepTime        Int
-  cookTime        Int
-  servings        Int
-  difficulty      Difficulty
-  type            DishType
-  diet            Diet[]
-  imageUrl        String?
-  instructions    String   @db.Text
-  ingredients     Json     // Stocké en JSON temporairement
-  status          PendingStatus @default(PENDING)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id           String       @id @default(uuid())
+  title        String
+  description  String
+  country      String
+  prepTime     Int
+  cookTime     Int
+  servings     Int
+  difficulty   Difficulty
+  type         RecipeType
+  diet         Diet[]
+  imageUrl     String?
+  instructions String       @db.Text
+  ingredients  Json // Stocké en JSON temporairement
+  status       RecipeStatus @default(PENDING)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
-  authorId        String
-  author          User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
-enum PendingStatus {
+enum RecipeStatus {
+  DRAFT
   PENDING
   APPROVED
   REJECTED

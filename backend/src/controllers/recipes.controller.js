@@ -8,6 +8,7 @@ export const getAllRecipes = async (req, res) => {
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
         const where = {
+            status: 'APPROVED',
             isPublished: true,
         };
 
@@ -209,6 +210,14 @@ export const createRecipe = async (req, res) => {
 
         const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
+        let status = 'PENDING';
+        let isPublished = false;
+
+        if (req.user.role === 'ADMIN') {
+            status = 'APPROVED';
+            isPublished = true;
+        }
+
         const recipe = await prisma.recipe.create({
             data: {
                 title,
@@ -222,6 +231,8 @@ export const createRecipe = async (req, res) => {
                 diet: parsedDiet,
                 instructions,
                 imageUrl,
+                status,
+                isPublished,
                 authorId: req.user.id,
                 ingredients: {
                     create: parsedIngredients.map(ing => ({
@@ -242,14 +253,17 @@ export const createRecipe = async (req, res) => {
             },
         });
 
+        const message = req.user.role === 'ADMIN'
+            ? 'Recipe created and published successfully'
+            : 'Recipe submitted for review';
+
         res.status(201).json({
-            message: 'Recipe created successfully',
+            message,
             recipe,
         });
     } catch (error) {
         console.error('Create recipe error:', error);
 
-        // Supprime l'image si erreur
         if (req.file) {
             deleteImage(`/uploads/${req.file.filename}`);
         }
@@ -304,6 +318,14 @@ export const updateRecipe = async (req, res) => {
             imageUrl = `/uploads/${req.file.filename}`;
         }
 
+        let newStatus = existingRecipe.status;
+        let isPublished = existingRecipe.isPublished;
+
+        if (existingRecipe.status === 'REJECTED' && req.user.role !== 'ADMIN') {
+            newStatus = 'PENDING';
+            isPublished = false;
+        }
+
         const recipe = await prisma.recipe.update({
             where: { id },
             data: {
@@ -318,6 +340,9 @@ export const updateRecipe = async (req, res) => {
                 diet: parsedDiet,
                 instructions,
                 imageUrl,
+                status: newStatus,
+                isPublished,
+                moderationNote: newStatus === 'PENDING' ? null : existingRecipe.moderationNote,
                 ingredients: {
                     deleteMany: {},
                     create: parsedIngredients.map(ing => ({
@@ -339,7 +364,9 @@ export const updateRecipe = async (req, res) => {
         });
 
         res.json({
-            message: 'Recipe updated successfully',
+            message: newStatus === 'PENDING'
+                ? 'Recipe updated and resubmitted for review'
+                : 'Recipe updated successfully',
             recipe,
         });
     } catch (error) {
@@ -383,13 +410,13 @@ export const getRecipeFilters = async (req, res) => {
     try {
         const [countries, types, ingredients, diets] = await Promise.all([
             prisma.recipe.findMany({
-                where: { isPublished: true },
+                where: { status: 'APPROVED', isPublished: true },
                 select: { country: true },
                 distinct: ['country'],
                 orderBy: { country: 'asc' }
             }),
             prisma.recipe.findMany({
-                where: { isPublished: true },
+                where: { status: 'APPROVED', isPublished: true },
                 select: { type: true },
                 distinct: ['type']
             }),
@@ -399,7 +426,7 @@ export const getRecipeFilters = async (req, res) => {
                 orderBy: { name: 'asc' }
             }),
             prisma.recipe.findMany({
-                where: { isPublished: true },
+                where: { status: 'APPROVED', isPublished: true },
                 select: { diet: true }
             })
         ]);
