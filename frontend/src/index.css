@@ -211,4 +211,13 @@
     html.dark .hero-text {
         color: white !important;
     }
+
+    html.dark .btn-primary {
+        background-color: #095d63;
+        color: white;
+    }
+
+
+
+
 }

@@ -70,7 +70,7 @@ const Profile = () => {
 
     return (
         <div>
-            <div className="bg-linear-to-r from-primary to-secondary rounded-lg p-12 mb-8 flex flex-col md:flex-row items-start md:items-center gap-6">
+            <div className="bg-linear-to-r from-[#095d63] to-white dark:from-primary dark:to-secondary rounded-lg p-12 mb-8 flex flex-col md:flex-row items-start md:items-center gap-6">
                 <div className="flex items-center gap-4">
                     <div className="w-20 h-20 rounded-full bg-black/20 flex items-center justify-center border-4 border-white shadow-md">
                         <span className="hero-text text-2xl font-bold">
@@ -193,15 +193,15 @@ const Profile = () => {
                         <h2 className="text-2xl font-bold mb-4">Activité</h2>
                         <div className="grid grid-cols-3 gap-4">
                             <div className="stat-card">
-                                <p className="text-xs uppercase tracking-wide text-gray-500">Recettes</p>
+                                <p className="text-xs uppercase tracking-wide text-black">Recettes</p>
                                 <p className="mt-2 text-2xl font-bold">{userStats.recipesCount}</p>
                             </div>
                             <div className="stat-card">
-                                <p className="text-xs uppercase tracking-wide text-gray-500">Favoris</p>
+                                <p className="text-xs uppercase tracking-wide text-black">Favoris</p>
                                 <p className="mt-2 text-2xl font-bold">{userStats.favoritesCount}</p>
                             </div>
                             <div className="stat-card">
-                                <p className="text-xs uppercase tracking-wide text-gray-500">Likes</p>
+                                <p className="text-xs uppercase tracking-wide text-black">Likes</p>
                                 <p className="mt-2 text-2xl font-bold">{userStats.likesCount}</p>
                             </div>
                         </div>

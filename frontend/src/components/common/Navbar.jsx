@@ -32,7 +32,7 @@ const Navbar = () => {
                 <div className="flex justify-between items-center h-14 sm:h-16">
                     {/* Logo */}
                     <Link to="/" onClick={closeMenu} className="flex items-center space-x-2 text-primary font-bold text-lg sm:text-xl flex-shrink-0">
-                        <img src={logo} alt="logo_yboouf" className="h-10 sm:h-12 object-contain"/>
+                        <img src={logo} alt="logo_yboouf" className="h-22 sm:h-24 object-contain"/>
                     </Link>
 
                     {/* Navigation Desktop - Hidden on mobile */}
@@ -55,7 +55,7 @@ const Navbar = () => {
 
                                 <button
                                     onClick={handleLogout}
-                                    className="flex items-center space-x-2 text-black dark:text-gray-300 hover:text-red-400 dark:hover:text-red-500 transition-colors text-sm sm:text-base"
+                                    className="flex items-center space-x-2 text-white dark:text-white hover:text-red-400 dark:hover:text-red-500 transition-colors"
                                 >
                                     <LogOut size={20}/>
                                     <span>Déconnexion</span>

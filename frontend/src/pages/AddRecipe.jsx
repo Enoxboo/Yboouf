@@ -208,9 +208,9 @@ const AddRecipe = () => {
 
     return (
         <section className="mx-auto max-w-6xl px-3 sm:px-4 md:px-6">
-            <div className="mb-6 rounded-2xl bg-linear-to-r from-primary to-secondary px-4 sm:px-6 py-5 sm:py-7 shadow-md">
-                <h1 className="text-2xl sm:text-3xl font-bold">Ajouter une recette</h1>
-                <p className="mt-2 text-sm sm:text-base">Partage une recette du monde avec la communaute Yboouf.</p>
+            <div className="mb-6 rounded-2xl bg-linear-to-r from-[#095d63] to-white dark:from-primary dark:to-secondary px-4 sm:px-6 py-5 sm:py-7 shadow-md">
+                <h1 className="hero-text text-2xl sm:text-3xl font-bold">Ajouter une recette</h1>
+                <p className="hero-text mt-2 text-sm sm:text-base">Partage une recette du monde avec la communaute Yboouf.</p>
             </div>
 
             {formError && (
@@ -332,7 +332,7 @@ const AddRecipe = () => {
                         <div className="space-y-3">
                             {steps.map((step, index) => (
                                 <div key={`step-${index}`} className="flex flex-col sm:flex-row gap-3 rounded-xl border border-gray-200 p-3 dark:border-gray-600">
-                                    <span className="min-w-6 text-sm font-semibold text-gray-500 mt-3 sm:mt-0">{index + 1}.</span>
+                                    <span className="min-w-6 text-sm font-semibold text-white mt-3 sm:mt-0">{index + 1}.</span>
                                     <textarea
                                         value={step}
                                         onChange={(event) => handleStepChange(index, event.target.value)}
@@ -460,7 +460,11 @@ const AddRecipe = () => {
                         </div>
 
                         <div className="mt-6 border-t border-gray-200 pt-5 dark:border-gray-600">
-                            <button type="submit" className="btn-primary w-full py-3 text-sm sm:text-base" disabled={createRecipe.isPending}>
+                            <button
+                                type="submit"
+                                className="btn-primary w-full py-3 text-sm sm:text-base dark:text-black"
+                                disabled={createRecipe.isPending}
+                            >
                                 {createRecipe.isPending ? 'Envoi en cours...' : 'Envoyer la recette'}
                             </button>
                         </div>
