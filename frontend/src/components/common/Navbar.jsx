@@ -1,4 +1,4 @@
-import {Link, useNavigate} from 'react-router-dom';
+import {Link, useNavigate, useLocation} from 'react-router-dom';
 import {useAuth} from '../../context/AuthContext';
 import {Plus, User, LogOut, Menu, X} from 'lucide-react';
 import {useState, useEffect} from 'react';
@@ -8,6 +8,7 @@ import logo from '../../assets/logo_yboouf.png';
 const Navbar = () => {
     const {user, logout} = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [isOpen, setIsOpen] = useState(false);
 
     const handleLogout = () => {
@@ -19,7 +20,7 @@ const Navbar = () => {
     // Fermer le menu au changement de route
     useEffect(() => {
         setIsOpen(false);
-    }, []);
+    }, [location.pathname]);
 
     // Fermer le menu quand on clique sur un lien
     const closeMenu = () => setIsOpen(false);
