@@ -15,9 +15,9 @@ function App() {
     return (
         <ThemeProvider>
             <AuthProvider>
-                <div className="min-h-screen flex flex-col">
+                <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors duration-200">
                     <Navbar />
-                    <main className="flex-grow container mx-auto px-4 py-8 mt-20">
+                    <main className="flex-grow container mx-auto px-4 py-4 sm:py-6 md:py-8 mt-14 sm:mt-16">
                         <Routes>
                             <Route path="/" element={<Home />} />
                             <Route path="/recipe/:id" element={<RecipePage />} />
