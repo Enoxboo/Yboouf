@@ -42,25 +42,25 @@ const Register = () => {
     };
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-            <div className="card max-w-md w-full">
+        <div className="min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8">
+            <div className="card max-w-md w-full dark:bg-gray-800">
                 <div className="text-center mb-8">
                     <UserPlus className="mx-auto h-12 w-12 text-primary mb-4" />
-                    <h2 className="text-3xl font-bold">Inscription</h2>
-                    <p className="text-gray-600 mt-2">
+                    <h2 className="text-2xl sm:text-3xl font-bold dark:text-white">Inscription</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
                         Créez votre compte Yboouf
                     </p>
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                    <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg mb-4 text-sm">
                         {error}
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label htmlFor="username" className="block text-sm font-medium mb-2">
+                        <label htmlFor="username" className="block text-sm font-medium mb-2 dark:text-gray-300">
                             Nom d'utilisateur
                         </label>
                         <input
@@ -72,16 +72,16 @@ const Register = () => {
                             minLength={3}
                             maxLength={30}
                             pattern="[a-zA-Z0-9_]+"
-                            className="input"
+                            className="input dark:bg-gray-700 dark:text-white dark:border-gray-600"
                             placeholder="pseudo123"
                         />
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             3-30 caractères (lettres, chiffres, tirets bas uniquement)
                         </p>
                     </div>
 
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium mb-2">
+                        <label htmlFor="email" className="block text-sm font-medium mb-2 dark:text-gray-300">
                             Adresse email
                         </label>
                         <input
@@ -90,13 +90,13 @@ const Register = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="input"
+                            className="input dark:bg-gray-700 dark:text-white dark:border-gray-600"
                             placeholder="exemple@email.com"
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium mb-2">
+                        <label htmlFor="password" className="block text-sm font-medium mb-2 dark:text-gray-300">
                             Mot de passe
                         </label>
                         <input
@@ -106,16 +106,16 @@ const Register = () => {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                             minLength={6}
-                            className="input"
+                            className="input dark:bg-gray-700 dark:text-white dark:border-gray-600"
                             placeholder="••••••••"
                         />
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             Minimum 6 caractères
                         </p>
                     </div>
 
                     <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2 dark:text-gray-300">
                             Confirmer le mot de passe
                         </label>
                         <input
@@ -124,7 +124,7 @@ const Register = () => {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
-                            className="input"
+                            className="input dark:bg-gray-700 dark:text-white dark:border-gray-600"
                             placeholder="••••••••"
                         />
                     </div>
@@ -132,13 +132,13 @@ const Register = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="btn-primary w-full"
+                        className="btn-primary w-full text-sm sm:text-base"
                     >
                         {loading ? 'Inscription...' : 'S\'inscrire'}
                     </button>
                 </form>
 
-                <p className="text-center mt-6 text-gray-600">
+                <p className="text-center mt-6 text-gray-600 dark:text-gray-400 text-sm sm:text-base">
                     Déjà un compte ?{' '}
                     <Link to="/login" className="text-primary hover:underline font-medium">
                         Connectez-vous

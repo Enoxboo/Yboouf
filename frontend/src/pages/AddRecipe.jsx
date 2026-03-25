@@ -207,14 +207,14 @@ const AddRecipe = () => {
     };
 
     return (
-        <section className="mx-auto max-w-6xl">
-            <div className="mb-6 rounded-2xl bg-linear-to-r from-primary to-secondary px-6 py-7 shadow-md">
-                <h1 className="text-3xl font-bold">Ajouter une recette</h1>
-                <p className="mt-2 text-base">Partage une recette du monde avec la communaute Yboouf.</p>
+        <section className="mx-auto max-w-6xl px-3 sm:px-4 md:px-6">
+            <div className="mb-6 rounded-2xl bg-linear-to-r from-primary to-secondary px-4 sm:px-6 py-5 sm:py-7 shadow-md">
+                <h1 className="text-2xl sm:text-3xl font-bold">Ajouter une recette</h1>
+                <p className="mt-2 text-sm sm:text-base">Partage une recette du monde avec la communaute Yboouf.</p>
             </div>
 
             {formError && (
-                <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+                <div className="mb-6 rounded-xl border border-red-200 bg-red-50 dark:bg-red-900 dark:border-red-700 px-4 py-3 text-red-700 dark:text-red-200 text-sm sm:text-base">
                     {formError}
                 </div>
             )}
@@ -222,7 +222,7 @@ const AddRecipe = () => {
             <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-12">
                 <div className="space-y-6 lg:col-span-8">
                     <div className="card rounded-2xl">
-                        <h2 className="mb-4 text-xl font-semibold">Infos principales</h2>
+                        <h2 className="mb-4 text-lg sm:text-xl font-semibold">Infos principales</h2>
                         <div className="grid grid-cols-1 gap-4">
                             <div>
                                 <label htmlFor="title" className="mb-2 block text-sm font-semibold">Titre *</label>
@@ -247,7 +247,7 @@ const AddRecipe = () => {
                                     name="description"
                                     value={formData.description}
                                     onChange={handleInputChange}
-                                    className={`${fieldClass} min-h-28`}
+                                    className={`${fieldClass} min-h-24 sm:min-h-28`}
                                     required
                                     minLength={10}
                                     maxLength={500}
@@ -272,9 +272,9 @@ const AddRecipe = () => {
                     </div>
 
                     <div className="card rounded-2xl">
-                        <div className="mb-3 flex items-center justify-between">
-                            <h2 className="text-xl font-semibold">Ingredients *</h2>
-                            <button type="button" onClick={addIngredient} className="btn-secondary inline-flex items-center gap-2">
+                        <div className="mb-3 flex items-center justify-between gap-2">
+                            <h2 className="text-lg sm:text-xl font-semibold">Ingredients *</h2>
+                            <button type="button" onClick={addIngredient} className="btn-secondary inline-flex items-center gap-2 text-sm sm:text-base">
                                 <Plus size={16} /> Ajouter
                             </button>
                         </div>
@@ -282,17 +282,17 @@ const AddRecipe = () => {
                             {ingredients.map((ingredient, index) => (
                                 <div key={`ingredient-${index}`} className="rounded-xl border border-gray-200 p-3 dark:border-gray-600">
                                     <div className="mb-2 flex items-center justify-between">
-                                        <p className="text-sm font-semibold">Ingredient {index + 1}</p>
+                                        <p className="text-xs sm:text-sm font-semibold">Ingredient {index + 1}</p>
                                         <button
                                             type="button"
                                             onClick={() => removeIngredient(index)}
-                                            className="rounded-md p-2 text-red-600 hover:bg-red-50"
+                                            className="rounded-md p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                             aria-label={`Supprimer l'ingredient ${index + 1}`}
                                         >
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
-                                    <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                                    <div className="grid grid-cols-1 gap-3">
                                         <input
                                             type="text"
                                             value={ingredient.name}
@@ -300,20 +300,22 @@ const AddRecipe = () => {
                                             className={fieldClass}
                                             placeholder="Nom (ex: Semoule)"
                                         />
-                                        <input
-                                            type="text"
-                                            value={ingredient.quantity}
-                                            onChange={(event) => handleIngredientChange(index, 'quantity', event.target.value)}
-                                            className={fieldClass}
-                                            placeholder="Quantite (ex: 300)"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={ingredient.unit}
-                                            onChange={(event) => handleIngredientChange(index, 'unit', event.target.value)}
-                                            className={fieldClass}
-                                            placeholder="Unite (ex: g)"
-                                        />
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <input
+                                                type="text"
+                                                value={ingredient.quantity}
+                                                onChange={(event) => handleIngredientChange(index, 'quantity', event.target.value)}
+                                                className={fieldClass}
+                                                placeholder="Quantite (ex: 300)"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={ingredient.unit}
+                                                onChange={(event) => handleIngredientChange(index, 'unit', event.target.value)}
+                                                className={fieldClass}
+                                                placeholder="Unite (ex: g)"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -321,16 +323,16 @@ const AddRecipe = () => {
                     </div>
 
                     <div className="card rounded-2xl">
-                        <div className="mb-3 flex items-center justify-between">
-                            <h2 className="text-xl font-semibold">Preparation *</h2>
-                            <button type="button" onClick={addStep} className="btn-secondary inline-flex items-center gap-2">
+                        <div className="mb-3 flex items-center justify-between gap-2">
+                            <h2 className="text-lg sm:text-xl font-semibold">Preparation *</h2>
+                            <button type="button" onClick={addStep} className="btn-secondary inline-flex items-center gap-2 text-sm sm:text-base">
                                 <Plus size={16} /> Ajouter
                             </button>
                         </div>
                         <div className="space-y-3">
                             {steps.map((step, index) => (
-                                <div key={`step-${index}`} className="flex items-start gap-3 rounded-xl border border-gray-200 p-3 dark:border-gray-600">
-                                    <span className="mt-3 min-w-7 text-sm font-semibold text-gray-500">{index + 1}.</span>
+                                <div key={`step-${index}`} className="flex flex-col sm:flex-row gap-3 rounded-xl border border-gray-200 p-3 dark:border-gray-600">
+                                    <span className="min-w-6 text-sm font-semibold text-gray-500 mt-3 sm:mt-0">{index + 1}.</span>
                                     <textarea
                                         value={step}
                                         onChange={(event) => handleStepChange(index, event.target.value)}
@@ -340,7 +342,7 @@ const AddRecipe = () => {
                                     <button
                                         type="button"
                                         onClick={() => removeStep(index)}
-                                        className="mt-1 rounded-md p-2 text-red-600 hover:bg-red-50"
+                                        className="mt-1 sm:mt-3 rounded-md p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex-shrink-0"
                                         aria-label={`Supprimer l'etape ${index + 1}`}
                                     >
                                         <Trash2 size={16} />
@@ -353,7 +355,7 @@ const AddRecipe = () => {
 
                 <aside className="space-y-6 lg:col-span-4">
                     <div className="card rounded-2xl lg:sticky lg:top-24">
-                        <h2 className="mb-4 text-xl font-semibold">Details recette</h2>
+                        <h2 className="mb-4 text-lg sm:text-xl font-semibold">Details recette</h2>
 
                         <div className="space-y-4">
                             <NumberField
@@ -423,7 +425,7 @@ const AddRecipe = () => {
                             </div>
 
                             <div>
-                                <p className="mb-2 block text-sm font-semibold">Regimes alimentaires</p>
+                                <p className="mb-3 block text-sm font-semibold">Regimes alimentaires</p>
                                 <div className="flex flex-wrap gap-2">
                                     {DIET_OPTIONS.map((dietOption) => {
                                         const isSelected = selectedDiets.includes(dietOption.value);
@@ -432,7 +434,7 @@ const AddRecipe = () => {
                                                 key={dietOption.value}
                                                 type="button"
                                                 onClick={() => toggleDiet(dietOption.value)}
-                                                className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                                                className={`rounded-full border px-3 py-1.5 text-xs sm:text-sm transition ${
                                                     isSelected
                                                         ? 'border-primary bg-primary text-white'
                                                         : 'border-gray-300 bg-white text-gray-700 hover:border-primary/60 dark:border-gray-500 dark:bg-gray-700 dark:text-white'
@@ -458,7 +460,7 @@ const AddRecipe = () => {
                         </div>
 
                         <div className="mt-6 border-t border-gray-200 pt-5 dark:border-gray-600">
-                            <button type="submit" className="btn-primary w-full py-3" disabled={createRecipe.isPending}>
+                            <button type="submit" className="btn-primary w-full py-3 text-sm sm:text-base" disabled={createRecipe.isPending}>
                                 {createRecipe.isPending ? 'Envoi en cours...' : 'Envoyer la recette'}
                             </button>
                         </div>

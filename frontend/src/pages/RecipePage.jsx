@@ -63,22 +63,22 @@ function RecipePage() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-8">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
                 {recipe.imageUrl && (
                     <img
                         src={`${import.meta.env.VITE_API_URL}${recipe.imageUrl}`}
                         alt={recipe.title}
-                        className="w-full h-96 object-cover"
+                        className="w-full h-48 sm:h-72 md:h-96 object-cover"
                     />
                 )}
 
-                <div className="p-8">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                <div className="p-4 sm:p-6 md:p-8">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-4">
                         {recipe.title}
                     </h1>
 
-                    <div className="flex items-center gap-4 mb-6 text-gray-600">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 sm:mb-6 text-sm sm:text-base text-gray-600 dark:text-gray-400">
                         <span className="flex items-center">
                             ⭐ {recipe.averageRating || 0}
                         </span>
@@ -86,44 +86,44 @@ function RecipePage() {
                         <span>Par {recipe.author.username}</span>
                     </div>
 
-                    <p className="text-gray-700 text-lg mb-8">
+                    <p className="text-gray-700 dark:text-gray-300 text-base sm:text-lg mb-6 sm:mb-8">
                         {recipe.description}
                     </p>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div className="bg-gray-50 p-4 rounded-lg text-center">
-                            <div className="text-2xl font-bold text-primary">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                        <div className="bg-gray-50 dark:bg-gray-700 p-3 sm:p-4 rounded-lg text-center">
+                            <div className="text-xl sm:text-2xl font-bold text-primary">
                                 {recipe.prepTime}
                             </div>
-                            <div className="text-sm text-gray-600">Préparation (min)</div>
+                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Préparation (min)</div>
                         </div>
-                        <div className="bg-gray-50 p-4 rounded-lg text-center">
-                            <div className="text-2xl font-bold text-primary">
+                        <div className="bg-gray-50 dark:bg-gray-700 p-3 sm:p-4 rounded-lg text-center">
+                            <div className="text-xl sm:text-2xl font-bold text-primary">
                                 {recipe.cookTime}
                             </div>
-                            <div className="text-sm text-gray-600">Cuisson (min)</div>
+                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Cuisson (min)</div>
                         </div>
-                        <div className="bg-gray-50 p-4 rounded-lg text-center">
-                            <div className="text-2xl font-bold text-primary">
+                        <div className="bg-gray-50 dark:bg-gray-700 p-3 sm:p-4 rounded-lg text-center">
+                            <div className="text-xl sm:text-2xl font-bold text-primary">
                                 {recipe.servings}
                             </div>
-                            <div className="text-sm text-gray-600">Portions</div>
+                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Portions</div>
                         </div>
-                        <div className="bg-gray-50 p-4 rounded-lg text-center">
-                            <div className="text-2xl font-bold text-primary">
+                        <div className="bg-gray-50 dark:bg-gray-700 p-3 sm:p-4 rounded-lg text-center">
+                            <div className="text-xl sm:text-2xl font-bold text-primary">
                                 {recipe.difficulty}
                             </div>
-                            <div className="text-sm text-gray-600">Difficulté</div>
+                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Difficulté</div>
                         </div>
                     </div>
 
-                    <div className="mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    <div className="mb-6 sm:mb-8">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
                             Ingrédients
                         </h2>
-                        <ul className="space-y-2">
+                        <ul className="space-y-1 sm:space-y-2">
                             {recipe.ingredients.map((ing, index) => (
-                                <li key={index} className="flex items-center gap-2">
+                                <li key={index} className="flex items-center gap-2 text-sm sm:text-base text-gray-700 dark:text-gray-300">
                                     <span className="text-primary">•</span>
                                     <span>{ing.quantity} {ing.unit} {ing.name}</span>
                                 </li>
@@ -132,10 +132,10 @@ function RecipePage() {
                     </div>
 
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
                             Instructions
                         </h2>
-                        <div className="prose max-w-none">
+                        <div className="prose dark:prose-invert max-w-none text-sm sm:text-base text-gray-700 dark:text-gray-300">
                             {recipe.instructions}
                         </div>
                     </div>
