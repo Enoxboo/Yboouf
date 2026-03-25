@@ -7,7 +7,10 @@ import RecipePage from './pages/RecipePage';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import AddRecipe from './pages/AddRecipe';
 import Footer from './components/common/Footer';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import { Toaster } from 'sonner';
 
 function App() {
     return (
@@ -22,9 +25,26 @@ function App() {
                             <Route path="/profile" element={<Profile />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/register" element={<Register />} />
+                            <Route
+                                path="/add-recipe"
+                                element={
+                                    <ProtectedRoute>
+                                        <AddRecipe />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/add_recipes"
+                                element={
+                                    <ProtectedRoute>
+                                        <AddRecipe />
+                                    </ProtectedRoute>
+                                }
+                            />
                         </Routes>
                     </main>
                     <Footer />
+                    <Toaster richColors position="top-right" />
                 </div>
             </AuthProvider>
         </ThemeProvider>
