@@ -61,11 +61,11 @@ const Home = () => {
     return (
         <div>
             {/* Hero Section */}
-            <div className="bg-linear-to-r from-primary to-secondary text-black rounded-lg p-12 mb-8">
-                <h1 className="text-4xl font-bold mb-4">
+            <div className="bg-linear-to-r from-primary to-secondary text-black rounded-lg px-4 py-6 sm:px-8 sm:py-8 mb-6 sm:mb-8">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4">
                     Des saveurs du monde délicieuses,
                 </h1>
-                <p className="text-xl">
+                <p className="text-base sm:text-lg lg:text-xl">
                     et votre recette favorite à portée de main.
                 </p>
             </div>
@@ -76,9 +76,10 @@ const Home = () => {
             )}
 
             {/* Filtres */}
-            <div className="card mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2">
-                    <div className="md:col-span-1 lg:col-span-1">
+            <div className="card mb-6 sm:mb-8">
+                <div className="flex flex-col gap-2 sm:gap-3">
+                    {/* SearchBar - Pleine largeur sur mobile */}
+                    <div>
                         <SearchBar
                             value={search}
                             onChange={setSearch}
@@ -86,78 +87,80 @@ const Home = () => {
                         />
                     </div>
 
-                    <select
-                        value={country}
-                        onChange={(e) => setCountry(e.target.value)}
-                        className="px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none hover:border-primary/50 appearance-none bg-white cursor-pointer
+                    {/* Grille de filtres - 2 cols mobile, 3 cols sm, 4 cols md */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+                        <select
+                            value={country}
+                            onChange={(e) => setCountry(e.target.value)}
+                            className="px-3 py-2 sm:px-4 sm:py-3 pr-8 sm:pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none hover:border-primary/50 appearance-none bg-white cursor-pointer text-sm sm:text-base
     bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwOTVkNjMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSI+PC9wb2x5bGluZT48L3N2Zz4=')]
     bg-no-repeat bg-size-[20px] bg-position-[right_0.75rem_center]
     hover:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmYWM1MWQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSI+PC9wb2x5bGluZT48L3N2Zz4=')]
     focus:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwOTVkNjMiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjYgOSAxMiAxNSAxOCA5Ij48L3BvbHlsaW5lPjwvc3ZnPg==')]"
-                    >
-                        <option value="">Tous les pays</option>
-                        {filters?.countries?.map((c) => (
-                            <option key={c} value={c}>{c}</option>
-                        ))}
-                    </select>
+                        >
+                            <option value="">Pays</option>
+                            {filters?.countries?.map((c) => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
 
-
-                    <select
-                        value={type}
-                        onChange={(e) => setType(e.target.value)}
-                        className="px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none hover:border-primary/50 appearance-none bg-white cursor-pointer
+                        <select
+                            value={type}
+                            onChange={(e) => setType(e.target.value)}
+                            className="px-3 py-2 sm:px-4 sm:py-3 pr-8 sm:pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none hover:border-primary/50 appearance-none bg-white cursor-pointer text-sm sm:text-base
     bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwOTVkNjMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSI+PC9wb2x5bGluZT48L3N2Zz4=')]
     bg-no-repeat bg-size-[20px] bg-position-[right_0.75rem_center]
     hover:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmYWM1MWQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSI+PC9wb2x5bGluZT48L3N2Zz4=')]
     focus:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwOTVkNjMiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjYgOSAxMiAxNSAxOCA5Ij48L3BvbHlsaW5lPjwvc3ZnPg==')]"
-                    >
-                        <option value="">Tous les types</option>
-                        {filters?.types?.map((t) => (
-                            <option key={t} value={t}>{typeLabels[t]}</option>
-                        ))}
-                    </select>
+                        >
+                            <option value="">Types</option>
+                            {filters?.types?.map((t) => (
+                                <option key={t} value={t}>{typeLabels[t]}</option>
+                            ))}
+                        </select>
 
-                    <select
-                        value={ingredient}
-                        onChange={(e) => setIngredient(e.target.value)}
-                        className="px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none hover:border-primary/50 appearance-none bg-white cursor-pointer
+                        <select
+                            value={ingredient}
+                            onChange={(e) => setIngredient(e.target.value)}
+                            className="px-3 py-2 sm:px-4 sm:py-3 pr-8 sm:pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none hover:border-primary/50 appearance-none bg-white cursor-pointer text-sm sm:text-base
     bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwOTVkNjMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSI+PC9wb2x5bGluZT48L3N2Zz4=')]
     bg-no-repeat bg-size-[20px] bg-position-[right_0.75rem_center]
     hover:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmYWM1MWQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSI+PC9wb2x5bGluZT48L3N2Zz4=')]
     focus:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwOTVkNjMiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjYgOSAxMiAxNSAxOCA5Ij48L3BvbHlsaW5lPjwvc3ZnPg==')]"
-                    >
-                        <option value="">Tous les ingrédients</option>
-                        {filters?.ingredients?.map((i) => (
-                            <option key={i} value={i}>{i}</option>
-                        ))}
-                    </select>
+                        >
+                            <option value="">Ingrédients</option>
+                            {filters?.ingredients?.map((i) => (
+                                <option key={i} value={i}>{i}</option>
+                            ))}
+                        </select>
 
-                    <select
-                        value={diet}
-                        onChange={(e) => setDiet(e.target.value)}
-                        className="px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none hover:border-primary/50 appearance-none bg-white cursor-pointer
+                        <select
+                            value={diet}
+                            onChange={(e) => setDiet(e.target.value)}
+                            className="px-3 py-2 sm:px-4 sm:py-3 pr-8 sm:pr-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none hover:border-primary/50 appearance-none bg-white cursor-pointer text-sm sm:text-base
     bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwOTVkNjMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSI+PC9wb2x5bGluZT48L3N2Zz4=')]
     bg-no-repeat bg-size-[20px] bg-position-[right_0.75rem_center]
     hover:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmYWM1MWQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSI+PC9wb2x5bGluZT48L3N2Zz4=')]
-    focus:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwOTVkNjMiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjYgOSAxMiAxNSAxOCA5Ij48L3BvbHlsaW5lPjwvc3ZnPg==')]"
-                    >
-                        <option value="">Tous les régimes</option>
-                        {filters?.diets?.map((d) => (
-                            <option key={d} value={d}>{dietLabels[d]}</option>
-                        ))}
-                    </select>
+    focus:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwOTVkNjMiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSI+PC9wb2x5bGluZT48L3N2Zz4=')]"
+                        >
+                            <option value="">Régimes</option>
+                            {filters?.diets?.map((d) => (
+                                <option key={d} value={d}>{dietLabels[d]}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 
 
             {/* Titre pour toutes les recettes */}
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
                 {search ? `Résultats pour "${search}"` : 'Toutes les recettes'}
             </h2>
 
             {/* Liste des recettes */}
             {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                     {[...Array(8)].map((_, i) => (
                         <div key={i} className="card animate-pulse">
                             <div className="h-48 bg-gray-200 rounded-lg mb-4"></div>
@@ -179,7 +182,7 @@ const Home = () => {
                     )}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                     {recipes.map((recipe) => (
                         <RecipeCard key={recipe.id} recipe={recipe}/>
                     ))}
