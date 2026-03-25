@@ -1,6 +1,49 @@
 import prisma from '../services/prisma.service.js';
 import { deleteImage } from '../middlewares/upload.middleware.js';
 
+const ALLOWED_DIETS = new Set(['VEGETARIAN', 'VEGAN', 'GLUTEN_FREE', 'DAIRY_FREE', 'HALAL', 'KOSHER']);
+
+const parseIngredientsInput = (ingredients) => {
+    const parsedIngredients = typeof ingredients === 'string' ? JSON.parse(ingredients) : ingredients;
+
+    if (!Array.isArray(parsedIngredients) || parsedIngredients.length === 0) {
+        throw new Error('INVALID_INGREDIENTS');
+    }
+
+    const normalizedIngredients = parsedIngredients
+        .map((ing) => ({
+            name: String(ing?.name || '').trim(),
+            quantity: String(ing?.quantity || '').trim(),
+            unit: String(ing?.unit || '').trim(),
+        }))
+        .filter((ing) => ing.name && ing.quantity && ing.unit);
+
+    if (normalizedIngredients.length === 0) {
+        throw new Error('INVALID_INGREDIENTS');
+    }
+
+    return normalizedIngredients;
+};
+
+const parseDietInput = (diet) => {
+    if (diet === undefined || diet === null) {
+        return [];
+    }
+
+    const rawValues = Array.isArray(diet) ? diet : String(diet).split(',');
+    const normalized = rawValues
+        .map((value) => String(value).trim())
+        .filter(Boolean);
+
+    const uniqueValues = [...new Set(normalized)];
+
+    if (!uniqueValues.every((value) => ALLOWED_DIETS.has(value))) {
+        throw new Error('INVALID_DIET');
+    }
+
+    return uniqueValues;
+};
+
 export const getAllRecipes = async (req, res) => {
     try {
         const { search, country, type, diet, ingredients, page = 1, limit = 12 } = req.query;
@@ -200,13 +243,8 @@ export const createRecipe = async (req, res) => {
             ingredients,
         } = req.body;
 
-        const parsedIngredients = typeof ingredients === 'string'
-            ? JSON.parse(ingredients)
-            : ingredients;
-
-        const parsedDiet = typeof diet === 'string'
-            ? (diet.includes(',') ? diet.split(',') : [diet])
-            : diet || [];
+        const parsedIngredients = parseIngredientsInput(ingredients);
+        const parsedDiet = parseDietInput(diet);
 
         const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
@@ -268,6 +306,14 @@ export const createRecipe = async (req, res) => {
             deleteImage(`/uploads/${req.file.filename}`);
         }
 
+        if (error.message === 'INVALID_INGREDIENTS') {
+            return res.status(400).json({ error: 'Ingredients payload is invalid' });
+        }
+
+        if (error.message === 'INVALID_DIET') {
+            return res.status(400).json({ error: 'Diet payload is invalid' });
+        }
+
         res.status(500).json({ error: 'Failed to create recipe' });
     }
 };
@@ -302,13 +348,8 @@ export const updateRecipe = async (req, res) => {
             return res.status(403).json({ error: 'Not authorized to update this recipe' });
         }
 
-        const parsedIngredients = typeof ingredients === 'string'
-            ? JSON.parse(ingredients)
-            : ingredients;
-
-        const parsedDiet = typeof diet === 'string'
-            ? (diet.includes(',') ? diet.split(',') : [diet])
-            : diet;
+        const parsedIngredients = parseIngredientsInput(ingredients);
+        const parsedDiet = parseDietInput(diet);
 
         let imageUrl = existingRecipe.imageUrl;
         if (req.file) {
@@ -371,6 +412,15 @@ export const updateRecipe = async (req, res) => {
         });
     } catch (error) {
         console.error('Update recipe error:', error);
+
+        if (error.message === 'INVALID_INGREDIENTS') {
+            return res.status(400).json({ error: 'Ingredients payload is invalid' });
+        }
+
+        if (error.message === 'INVALID_DIET') {
+            return res.status(400).json({ error: 'Diet payload is invalid' });
+        }
+
         res.status(500).json({ error: 'Failed to update recipe' });
     }
 };

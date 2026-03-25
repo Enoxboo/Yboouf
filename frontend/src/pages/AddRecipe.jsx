@@ -177,7 +177,9 @@ const AddRecipe = () => {
         payload.append('servings', formData.servings);
         payload.append('difficulty', formData.difficulty);
         payload.append('type', formData.type);
-        payload.append('diet', selectedDiets.join(','));
+        if (selectedDiets.length > 0) {
+            payload.append('diet', selectedDiets.join(','));
+        }
         payload.append('instructions', instructions);
         payload.append('ingredients', JSON.stringify(cleanIngredients));
 
