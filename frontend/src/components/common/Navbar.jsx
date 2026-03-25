@@ -30,7 +30,7 @@ const Navbar = () => {
 
                         {user ? (
                             <>
-                                <Link to="/add-recipe" className="btn-primary flex items-center space-x-2">
+                                <Link to="/add-recipe" className="btn-secondary flex items-center space-x-2">
                                     <Plus size={18}/>
                                     <span>Ajouter une recette</span>
                                 </Link>
@@ -43,7 +43,7 @@ const Navbar = () => {
 
                                 <button
                                     onClick={handleLogout}
-                                    className="flex items-center space-x-2 text-white dark:text-gray-300 hover:text-red-400 dark:hover:text-red-500 transition-colors"
+                                    className="flex items-center space-x-2 text-black dark:text-gray-300 hover:text-red-400 dark:hover:text-red-500 transition-colors"
                                 >
                                     <LogOut size={20}/>
                                     <span>Déconnexion</span>

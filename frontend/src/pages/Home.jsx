@@ -61,7 +61,7 @@ const Home = () => {
     return (
         <div>
             {/* Hero Section */}
-            <div className="bg-gradient-to-r from-primary to-secondary text-white rounded-lg p-12 mb-8">
+            <div className="bg-linear-to-r from-primary to-secondary text-black rounded-lg p-12 mb-8">
                 <h1 className="text-4xl font-bold mb-4">
                     Des saveurs du monde délicieuses,
                 </h1>
