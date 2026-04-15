@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { getRecipeImageUrl, RECIPE_PLACEHOLDER_URL } from '../utils/media';
 
 function RecipePage() {
     const { id } = useParams();
@@ -65,13 +66,14 @@ function RecipePage() {
     return (
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-8">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-                {recipe.imageUrl && (
-                    <img
-                        src={`${import.meta.env.VITE_API_URL}${recipe.imageUrl}`}
-                        alt={recipe.title}
-                        className="w-full h-48 sm:h-72 md:h-96 object-cover"
-                    />
-                )}
+                <img
+                    src={getRecipeImageUrl(recipe.imageUrl)}
+                    alt={recipe.title}
+                    className="w-full h-48 sm:h-72 md:h-96 object-cover"
+                    onError={(e) => {
+                        e.currentTarget.src = RECIPE_PLACEHOLDER_URL;
+                    }}
+                />
 
                 <div className="p-4 sm:p-6 md:p-8">
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-4">
