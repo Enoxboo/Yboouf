@@ -136,7 +136,7 @@ const Profile = () => {
                 <div className="space-y-6 lg:col-span-2">
                     <div className="card rounded-2xl">
                         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                            <h2 className="text-lg font-semibold sm:text-xl">Mes recettes (BDD)</h2>
+                            <h2 className="text-lg font-semibold sm:text-xl">Mes recettes</h2>
                             <select
                                 value={statusFilter}
                                 onChange={(event) => {
