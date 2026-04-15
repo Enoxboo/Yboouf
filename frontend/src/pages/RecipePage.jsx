@@ -125,7 +125,7 @@ function RecipePage() {
                             {recipe.ingredients.map((ing, index) => (
                                 <li key={index} className="flex items-center gap-2 text-sm sm:text-base text-gray-700 dark:text-gray-300">
                                     <span className="text-primary">•</span>
-                                    <span>{ing.quantity} {ing.unit} {ing.name}</span>
+                                    <span>{ing.name} {ing.quantity} {ing.unit} </span>
                                 </li>
                             ))}
                         </ul>
@@ -135,8 +135,7 @@ function RecipePage() {
                         <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
                             Instructions
                         </h2>
-                        <div className="prose dark:prose-invert max-w-none text-sm sm:text-base text-gray-700 dark:text-gray-300">
-                            {recipe.instructions}
+                        <div className="prose dark:prose-invert max-w-none whitespace-pre-line text-sm sm:text-base text-gray-700 dark:text-gray-300">                            {recipe.instructions}
                         </div>
                     </div>
                 </div>
