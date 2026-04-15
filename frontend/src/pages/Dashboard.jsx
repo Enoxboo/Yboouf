@@ -17,6 +17,7 @@ import {
     useRejectRecipe,
 } from '../hooks/useAdmin';
 import { recipeService } from '../services/recipeService';
+import { extractApiErrorMessage } from '../utils/apiError';
 
 const inputClass =
     'w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white';
@@ -115,7 +116,7 @@ const Dashboard = () => {
             toast.success('Recette supprimee definitivement');
         },
         onError: (error) => {
-            toast.error(error?.response?.data?.error || 'Impossible de supprimer la recette');
+            toast.error(extractApiErrorMessage(error, 'Impossible de supprimer la recette'));
         },
     });
 
@@ -150,7 +151,7 @@ const Dashboard = () => {
             await promoteUser.mutateAsync(targetUser.id);
             toast.success(`${targetUser.username} est maintenant moderateur`);
         } catch (error) {
-            toast.error(error?.response?.data?.error || 'Promotion impossible');
+            toast.error(extractApiErrorMessage(error, 'Promotion impossible'));
         }
     };
 
@@ -164,7 +165,7 @@ const Dashboard = () => {
             await deleteUser.mutateAsync(targetUser.id);
             toast.success('Compte supprime definitivement');
         } catch (error) {
-            toast.error(error?.response?.data?.error || 'Suppression impossible');
+            toast.error(extractApiErrorMessage(error, 'Suppression impossible'));
         }
     };
 
@@ -178,7 +179,7 @@ const Dashboard = () => {
             await setUserRole.mutateAsync({ id: targetUser.id, role: nextRole });
             toast.success(`${targetUser.username} est maintenant ${getRoleLabel(nextRole).toLowerCase()}`);
         } catch (error) {
-            toast.error(error?.response?.data?.error || 'Mise a jour du role impossible');
+            toast.error(extractApiErrorMessage(error, 'Mise a jour du role impossible'));
         }
     };
 
@@ -188,7 +189,7 @@ const Dashboard = () => {
             await approveRecipe.mutateAsync({ id: recipe.id, note: note || undefined });
             toast.success('Recette approuvee');
         } catch (error) {
-            toast.error(error?.response?.data?.error || 'Validation impossible');
+            toast.error(extractApiErrorMessage(error, 'Validation impossible'));
         }
     };
 
@@ -202,7 +203,7 @@ const Dashboard = () => {
             await rejectRecipe.mutateAsync({ id: recipe.id, reason });
             toast.success('Recette rejetee avec raison');
         } catch (error) {
-            toast.error(error?.response?.data?.error || 'Rejet impossible');
+            toast.error(extractApiErrorMessage(error, 'Rejet impossible'));
         }
     };
 
@@ -298,7 +299,11 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    {userLoading ? (
+                    {usersQuery.isError || userStatsQuery.isError ? (
+                        <p className="mt-5 text-sm text-red-600">
+                            {extractApiErrorMessage(usersQuery.error || userStatsQuery.error, 'Impossible de charger les utilisateurs pour le moment.')}
+                        </p>
+                    ) : userLoading ? (
                         <p className="mt-5 text-sm">Chargement des utilisateurs...</p>
                     ) : users.length === 0 ? (
                         <p className="mt-5 text-sm text-gray-500">Aucun utilisateur trouve avec ces filtres.</p>
@@ -417,7 +422,11 @@ const Dashboard = () => {
                                 </div>
                             </div>
 
-                            {recipeLoading ? (
+                            {recipesQuery.isError || pendingRecipesQuery.isError || recipeStatsQuery.isError ? (
+                                <p className="mt-4 text-sm text-red-600">
+                                    {extractApiErrorMessage(recipesQuery.error || pendingRecipesQuery.error || recipeStatsQuery.error, 'Impossible de charger les recettes en attente.')}
+                                </p>
+                            ) : recipeLoading ? (
                                 <p className="mt-4 text-sm">Chargement des recettes en attente...</p>
                             ) : pendingRecipes.length === 0 ? (
                                 <p className="mt-4 text-sm text-gray-500">Aucune recette en attente.</p>
@@ -490,7 +499,11 @@ const Dashboard = () => {
                                 </div>
                             </div>
 
-                            {recipesQuery.isLoading ? (
+                            {recipesQuery.isError ? (
+                                <p className="mt-4 text-sm text-red-600">
+                                    {extractApiErrorMessage(recipesQuery.error, 'Impossible de charger les recettes.')}
+                                </p>
+                            ) : recipesQuery.isLoading ? (
                                 <p className="mt-4 text-sm">Chargement des recettes...</p>
                             ) : recipes.length === 0 ? (
                                 <p className="mt-4 text-sm text-gray-500">Aucune recette trouvee.</p>
@@ -550,5 +563,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
 
