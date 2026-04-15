@@ -251,7 +251,7 @@ export const createRecipe = async (req, res) => {
         let status = 'PENDING';
         let isPublished = false;
 
-        if (req.user.role === 'ADMIN') {
+        if (req.user.role === 'ADMIN' || req.user.role === 'SUPER_ADMIN') {
             status = 'APPROVED';
             isPublished = true;
         }
@@ -291,7 +291,7 @@ export const createRecipe = async (req, res) => {
             },
         });
 
-        const message = req.user.role === 'ADMIN'
+        const message = (req.user.role === 'ADMIN' || req.user.role === 'SUPER_ADMIN')
             ? 'Recipe created and published successfully'
             : 'Recipe submitted for review';
 
@@ -344,7 +344,7 @@ export const updateRecipe = async (req, res) => {
             return res.status(404).json({ error: 'Recipe not found' });
         }
 
-        if (existingRecipe.authorId !== req.user.id && req.user.role !== 'ADMIN') {
+        if (existingRecipe.authorId !== req.user.id && req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
             return res.status(403).json({ error: 'Not authorized to update this recipe' });
         }
 
@@ -362,7 +362,7 @@ export const updateRecipe = async (req, res) => {
         let newStatus = existingRecipe.status;
         let isPublished = existingRecipe.isPublished;
 
-        if (existingRecipe.status === 'REJECTED' && req.user.role !== 'ADMIN') {
+        if (existingRecipe.status === 'REJECTED' && req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
             newStatus = 'PENDING';
             isPublished = false;
         }
@@ -437,7 +437,7 @@ export const deleteRecipe = async (req, res) => {
             return res.status(404).json({ error: 'Recipe not found' });
         }
 
-        if (recipe.authorId !== req.user.id && req.user.role !== 'ADMIN') {
+        if (recipe.authorId !== req.user.id && req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
             return res.status(403).json({ error: 'Not authorized to delete this recipe' });
         }
 

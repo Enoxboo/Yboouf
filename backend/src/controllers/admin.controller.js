@@ -1,17 +1,30 @@
 import prisma from '../services/prisma.service.js';
 
+const MANAGEABLE_ROLES = ['USER', 'MODERATOR', 'ADMIN'];
+
+const parsePagination = (page = 1, limit = 20) => {
+    const safePage = Math.max(parseInt(page, 10) || 1, 1);
+    const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+
+    return {
+        page: safePage,
+        limit: safeLimit,
+        skip: (safePage - 1) * safeLimit,
+    };
+};
+
 export const getPendingRecipes = async (req, res) => {
     try {
         const { page = 1, limit = 20 } = req.query;
-        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const pagination = parsePagination(page, limit);
 
         const [recipes, total] = await Promise.all([
             prisma.recipe.findMany({
                 where: {
                     status: 'PENDING'
                 },
-                skip,
-                take: parseInt(limit),
+                skip: pagination.skip,
+                take: pagination.limit,
                 include: {
                     author: {
                         select: {
@@ -43,10 +56,10 @@ export const getPendingRecipes = async (req, res) => {
         res.json({
             recipes,
             pagination: {
-                page: parseInt(page),
-                limit: parseInt(limit),
+                page: pagination.page,
+                limit: pagination.limit,
                 total,
-                pages: Math.ceil(total / parseInt(limit))
+                pages: Math.ceil(total / pagination.limit)
             }
         });
     } catch (error) {
@@ -58,7 +71,7 @@ export const getPendingRecipes = async (req, res) => {
 export const getAllRecipesAdmin = async (req, res) => {
     try {
         const { status, page = 1, limit = 20, search } = req.query;
-        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const pagination = parsePagination(page, limit);
 
         const where = {};
 
@@ -76,8 +89,8 @@ export const getAllRecipesAdmin = async (req, res) => {
         const [recipes, total] = await Promise.all([
             prisma.recipe.findMany({
                 where,
-                skip,
-                take: parseInt(limit),
+                skip: pagination.skip,
+                take: pagination.limit,
                 include: {
                     author: {
                         select: {
@@ -111,10 +124,10 @@ export const getAllRecipesAdmin = async (req, res) => {
         res.json({
             recipes,
             pagination: {
-                page: parseInt(page),
-                limit: parseInt(limit),
+                page: pagination.page,
+                limit: pagination.limit,
                 total,
-                pages: Math.ceil(total / parseInt(limit))
+                pages: Math.ceil(total / pagination.limit)
             }
         });
     } catch (error) {
@@ -266,5 +279,292 @@ export const getModerationStats = async (req, res) => {
     } catch (error) {
         console.error('Get moderation stats error:', error);
         res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+};
+
+export const getUserModerationStats = async (req, res) => {
+    try {
+        const [total, users, moderators, admins, superAdmins] = await Promise.all([
+            prisma.user.count(),
+            prisma.user.count({ where: { role: 'USER' } }),
+            prisma.user.count({ where: { role: 'MODERATOR' } }),
+            prisma.user.count({ where: { role: 'ADMIN' } }),
+            prisma.user.count({ where: { role: 'SUPER_ADMIN' } }),
+        ]);
+
+        res.json({
+            stats: {
+                total,
+                users,
+                moderators,
+                admins,
+                superAdmins,
+            }
+        });
+    } catch (error) {
+        console.error('Get user moderation stats error:', error);
+        res.status(500).json({ error: 'Failed to fetch user stats' });
+    }
+};
+
+export const getRecipeByIdAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const recipe = await prisma.recipe.findUnique({
+            where: { id },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                    }
+                },
+                moderatedBy: {
+                    select: {
+                        id: true,
+                        username: true,
+                    }
+                },
+                ingredients: true,
+            }
+        });
+
+        if (!recipe) {
+            return res.status(404).json({ error: 'Recipe not found' });
+        }
+
+        res.json({ recipe });
+    } catch (error) {
+        console.error('Get admin recipe by id error:', error);
+        res.status(500).json({ error: 'Failed to fetch recipe' });
+    }
+};
+
+export const getUsersForModeration = async (req, res) => {
+    try {
+        const {
+            role,
+            createdFrom,
+            createdTo,
+            search,
+            page = 1,
+            limit = 12,
+        } = req.query;
+
+        const pagination = parsePagination(page, limit);
+        const where = {};
+
+        if (role && ['USER', 'MODERATOR', 'ADMIN', 'SUPER_ADMIN'].includes(role)) {
+            where.role = role;
+        }
+
+        if (search) {
+            where.OR = [
+                { username: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+            ];
+        }
+
+        if (createdFrom || createdTo) {
+            where.createdAt = {};
+            if (createdFrom) {
+                where.createdAt.gte = new Date(createdFrom);
+            }
+            if (createdTo) {
+                const endDate = new Date(createdTo);
+                endDate.setHours(23, 59, 59, 999);
+                where.createdAt.lte = endDate;
+            }
+        }
+
+        const [users, total] = await Promise.all([
+            prisma.user.findMany({
+                where,
+                skip: pagination.skip,
+                take: pagination.limit,
+                select: {
+                    id: true,
+                    username: true,
+                    email: true,
+                    role: true,
+                    createdAt: true,
+                    _count: {
+                        select: {
+                            recipes: true,
+                            comments: true,
+                            favorites: true,
+                        }
+                    }
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            }),
+            prisma.user.count({ where }),
+        ]);
+
+        res.json({
+            users,
+            pagination: {
+                page: pagination.page,
+                limit: pagination.limit,
+                total,
+                pages: Math.ceil(total / pagination.limit),
+            }
+        });
+    } catch (error) {
+        console.error('Get users moderation error:', error);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+};
+
+export const promoteUserToModerator = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const user = await prisma.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                role: true,
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+            return res.status(403).json({ error: 'Cannot update this role with this endpoint' });
+        }
+
+        if (user.role === 'MODERATOR') {
+            return res.status(400).json({ error: 'User is already moderator' });
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { id },
+            data: {
+                role: 'MODERATOR',
+            },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                role: true,
+                createdAt: true,
+            }
+        });
+
+        res.json({
+            message: 'Utilisateur promu moderateur',
+            user: updatedUser,
+        });
+    } catch (error) {
+        console.error('Promote user error:', error);
+        res.status(500).json({ error: 'Failed to promote user' });
+    }
+};
+
+export const setUserRoleBySuperAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+
+        if (!MANAGEABLE_ROLES.includes(role)) {
+            return res.status(400).json({ error: 'Invalid target role' });
+        }
+
+        if (id === req.user.id) {
+            return res.status(403).json({ error: 'Cannot change your own role' });
+        }
+
+        const targetUser = await prisma.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                role: true,
+                username: true,
+                email: true,
+                createdAt: true,
+            }
+        });
+
+        if (!targetUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        if (targetUser.role === 'SUPER_ADMIN') {
+            return res.status(403).json({ error: 'Cannot change super admin role' });
+        }
+
+        if (targetUser.role === role) {
+            return res.status(400).json({ error: 'User already has this role' });
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { id },
+            data: { role },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                role: true,
+                createdAt: true,
+            }
+        });
+
+        res.json({
+            message: `Role utilisateur mis a jour vers ${role}`,
+            user: updatedUser,
+        });
+    } catch (error) {
+        console.error('Set user role error:', error);
+        res.status(500).json({ error: 'Failed to update user role' });
+    }
+};
+
+export const deleteUserAccount = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const targetUser = await prisma.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                role: true,
+            }
+        });
+
+        if (!targetUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        if (targetUser.role === 'SUPER_ADMIN') {
+            return res.status(403).json({ error: 'Cannot delete super admin account' });
+        }
+
+        if (targetUser.role === 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+            return res.status(403).json({ error: 'Cannot delete admin account' });
+        }
+
+        if (targetUser.id === req.user.id) {
+            return res.status(403).json({ error: 'Cannot delete your own account from dashboard' });
+        }
+
+        if (req.user.role === 'MODERATOR' && targetUser.role !== 'USER') {
+            return res.status(403).json({ error: 'Moderator can only delete user accounts' });
+        }
+
+        await prisma.user.delete({
+            where: { id },
+        });
+
+        res.json({ message: 'Compte utilisateur supprime definitivement' });
+    } catch (error) {
+        console.error('Delete user account error:', error);
+        res.status(500).json({ error: 'Failed to delete user account' });
     }
 };

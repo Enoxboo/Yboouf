@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronDown, Minus, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useCreateRecipe } from '../hooks/useRecipes';
-import { useAuth } from '../context/AuthContext';
+import { adminService } from '../services/adminService';
+import { recipeService } from '../services/recipeService';
 
 const TYPE_OPTIONS = [
     { value: 'STARTER', label: 'Entree' },
@@ -34,6 +35,13 @@ const fieldClass =
     'w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500 shadow-sm transition focus:border-primary focus:ring-2 focus:ring-primary/25 focus:outline-none dark:border-gray-500 dark:bg-gray-700 dark:text-white';
 
 const selectClass = `${fieldClass} appearance-none pr-10`;
+
+const parseInstructions = (instructions = '') => {
+    return String(instructions)
+        .split('\n')
+        .map((line) => line.replace(/^\s*\d+\.\s*/, '').trim())
+        .filter(Boolean);
+};
 
 const NumberField = ({ id, label, value, min, max, unit, onChange }) => {
     const parsedValue = value === '' ? '' : Number(value);
@@ -80,10 +88,15 @@ const NumberField = ({ id, label, value, min, max, unit, onChange }) => {
     );
 };
 
-const AddRecipe = () => {
-    const { user } = useAuth();
+const DashboardEditRecipe = () => {
+    const { id } = useParams();
     const navigate = useNavigate();
-    const createRecipe = useCreateRecipe();
+
+    const recipeQuery = useQuery({
+        queryKey: ['admin-recipe', id],
+        queryFn: () => adminService.getRecipeById(id),
+        enabled: !!id,
+    });
 
     const [formData, setFormData] = useState({
         title: '',
@@ -101,44 +114,55 @@ const AddRecipe = () => {
     const [image, setImage] = useState(null);
     const [formError, setFormError] = useState('');
 
+    // Hydrate le formulaire une fois les donnees admin chargees.
+    useEffect(() => {
+        const recipe = recipeQuery.data?.recipe;
+        if (!recipe) {
+            return;
+        }
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setFormData({
+            title: recipe.title || '',
+            description: recipe.description || '',
+            country: recipe.country || '',
+            prepTime: String(recipe.prepTime ?? '15'),
+            cookTime: String(recipe.cookTime ?? '30'),
+            servings: String(recipe.servings ?? '4'),
+            difficulty: recipe.difficulty || 'EASY',
+            type: recipe.type || 'MAIN',
+        });
+        setIngredients(recipe.ingredients?.length ? recipe.ingredients.map((item) => ({
+            name: item.name || '',
+            quantity: item.quantity || '',
+            unit: item.unit || '',
+        })) : [emptyIngredient]);
+        setSteps(parseInstructions(recipe.instructions));
+        setSelectedDiets(Array.isArray(recipe.diet) ? recipe.diet : []);
+    }, [recipeQuery.data?.recipe]);
+
+    const updateRecipe = useMutation({
+        mutationFn: (payload) => recipeService.update(id, payload),
+    });
+
     const handleInputChange = (event) => {
         const { name, value } = event.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleIngredientChange = (index, field, value) => {
-        setIngredients((prev) =>
-            prev.map((ingredient, i) => (i === index ? { ...ingredient, [field]: value } : ingredient))
-        );
+        setIngredients((prev) => prev.map((ingredient, i) => (i === index ? { ...ingredient, [field]: value } : ingredient)));
     };
 
-    const addIngredient = () => {
-        setIngredients((prev) => [...prev, { ...emptyIngredient }]);
-    };
-
-    const removeIngredient = (index) => {
-        setIngredients((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
+    const toggleDiet = (dietValue) => {
+        setSelectedDiets((prev) => (prev.includes(dietValue) ? prev.filter((diet) => diet !== dietValue) : [...prev, dietValue]));
     };
 
     const handleStepChange = (index, value) => {
         setSteps((prev) => prev.map((step, i) => (i === index ? value : step)));
     };
 
-    const addStep = () => {
-        setSteps((prev) => [...prev, '']);
-    };
-
-    const removeStep = (index) => {
-        setSteps((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
-    };
-
-    const toggleDiet = (dietValue) => {
-        setSelectedDiets((prev) =>
-            prev.includes(dietValue) ? prev.filter((diet) => diet !== dietValue) : [...prev, dietValue]
-        );
-    };
-
-    const handleSubmit = async (event) => {
+    const saveRecipe = async (event) => {
         event.preventDefault();
         setFormError('');
 
@@ -163,10 +187,6 @@ const AddRecipe = () => {
         }
 
         const instructions = cleanSteps.map((step, index) => `${index + 1}. ${step}`).join('\n');
-        if (instructions.length < 20) {
-            setFormError('La preparation doit contenir au moins 20 caracteres.');
-            return;
-        }
 
         const payload = new FormData();
         payload.append('title', formData.title.trim());
@@ -182,139 +202,87 @@ const AddRecipe = () => {
         }
         payload.append('instructions', instructions);
         payload.append('ingredients', JSON.stringify(cleanIngredients));
-
         if (image) {
             payload.append('image', image);
         }
 
         try {
-            await createRecipe.mutateAsync(payload);
-
-            toast.success(
-                user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'
-                    ? 'Recette publiee avec succes.'
-                    : 'Recette envoyee pour validation.'
-            );
-
-            navigate('/');
+            await updateRecipe.mutateAsync(payload);
+            toast.success('Recette mise a jour avec succes');
+            navigate('/dashboard');
         } catch (error) {
             const details = error?.response?.data?.details;
             const firstDetail = Array.isArray(details) && details.length > 0 ? details[0].message : null;
-            const message = firstDetail || error?.response?.data?.error || 'Impossible de creer la recette.';
+            const message = firstDetail || error?.response?.data?.error || 'Impossible de mettre a jour la recette.';
             setFormError(message);
             toast.error(message);
         }
     };
 
+    const recipeTitle = useMemo(() => recipeQuery.data?.recipe?.title || 'Recette', [recipeQuery.data?.recipe?.title]);
+
+    if (recipeQuery.isLoading) {
+        return <p className="text-sm">Chargement de la recette...</p>;
+    }
+
+    if (recipeQuery.isError || !recipeQuery.data?.recipe) {
+        return <p className="text-sm text-red-600">Impossible de charger cette recette.</p>;
+    }
+
     return (
         <section className="mx-auto max-w-6xl px-3 sm:px-4 md:px-6">
-            <div className="mb-6 rounded-2xl bg-linear-to-r from-[#095d63] to-white dark:from-primary dark:to-secondary px-4 sm:px-6 py-5 sm:py-7 shadow-md">
-                <h1 className="hero-text text-2xl sm:text-3xl font-bold">Ajouter une recette</h1>
-                <p className="hero-text mt-2 text-sm sm:text-base">Partage une recette du monde avec la communaute Yboouf.</p>
+            <div className="mb-6 rounded-2xl bg-linear-to-r from-[#095d63] to-white px-4 py-5 shadow-md dark:from-primary dark:to-secondary">
+                <h1 className="hero-text text-2xl font-bold sm:text-3xl">Modifier une recette</h1>
+                <p className="hero-text mt-2 text-sm sm:text-base">Edition admin dediee pour: {recipeTitle}</p>
             </div>
 
             {formError && (
-                <div className="mb-6 rounded-xl border border-red-200 bg-red-50 dark:bg-red-900 dark:border-red-700 px-4 py-3 text-red-700 dark:text-red-200 text-sm sm:text-base">
+                <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-700 dark:bg-red-900 dark:text-red-200">
                     {formError}
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-12">
+            <form onSubmit={saveRecipe} className="grid gap-6 lg:grid-cols-12">
                 <div className="space-y-6 lg:col-span-8">
                     <div className="card rounded-2xl">
-                        <h2 className="mb-4 text-lg sm:text-xl font-semibold">Infos principales</h2>
+                        <h2 className="mb-4 text-lg font-semibold sm:text-xl">Infos principales</h2>
                         <div className="grid grid-cols-1 gap-4">
                             <div>
                                 <label htmlFor="title" className="mb-2 block text-sm font-semibold">Titre *</label>
-                                <input
-                                    id="title"
-                                    name="title"
-                                    type="text"
-                                    value={formData.title}
-                                    onChange={handleInputChange}
-                                    className={fieldClass}
-                                    required
-                                    minLength={3}
-                                    maxLength={100}
-                                    placeholder="Ex: Couscous royal traditionnel"
-                                />
+                                <input id="title" name="title" type="text" value={formData.title} onChange={handleInputChange} className={fieldClass} required minLength={3} maxLength={100} />
                             </div>
-
                             <div>
                                 <label htmlFor="description" className="mb-2 block text-sm font-semibold">Description *</label>
-                                <textarea
-                                    id="description"
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleInputChange}
-                                    className={`${fieldClass} min-h-24 sm:min-h-28`}
-                                    required
-                                    minLength={10}
-                                    maxLength={500}
-                                    placeholder="Donne envie en quelques lignes..."
-                                />
+                                <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} className={`${fieldClass} min-h-24`} required minLength={10} maxLength={500} />
                             </div>
-
                             <div>
                                 <label htmlFor="country" className="mb-2 block text-sm font-semibold">Pays *</label>
-                                <input
-                                    id="country"
-                                    name="country"
-                                    type="text"
-                                    value={formData.country}
-                                    onChange={handleInputChange}
-                                    className={fieldClass}
-                                    required
-                                    placeholder="Ex: Maroc"
-                                />
+                                <input id="country" name="country" type="text" value={formData.country} onChange={handleInputChange} className={fieldClass} required />
                             </div>
                         </div>
                     </div>
 
                     <div className="card rounded-2xl">
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                            <h2 className="text-lg sm:text-xl font-semibold">Ingredients *</h2>
-                            <button type="button" onClick={addIngredient} className="btn-secondary inline-flex items-center gap-2 text-sm sm:text-base">
+                        <div className="mb-3 flex items-center justify-between">
+                            <h2 className="text-lg font-semibold sm:text-xl">Ingredients *</h2>
+                            <button type="button" onClick={() => setIngredients((prev) => [...prev, { ...emptyIngredient }])} className="btn-secondary inline-flex items-center gap-2 text-sm">
                                 <Plus size={16} /> Ajouter
                             </button>
                         </div>
                         <div className="space-y-3">
                             {ingredients.map((ingredient, index) => (
-                                <div key={`ingredient-${index}`} className="rounded-xl border border-gray-200 p-3 dark:border-gray-600">
+                                <div key={`ing-${index}`} className="rounded-xl border border-gray-200 p-3 dark:border-gray-600">
                                     <div className="mb-2 flex items-center justify-between">
-                                        <p className="text-xs sm:text-sm font-semibold">Ingredient {index + 1}</p>
-                                        <button
-                                            type="button"
-                                            onClick={() => removeIngredient(index)}
-                                            className="rounded-md p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                            aria-label={`Supprimer l'ingredient ${index + 1}`}
-                                        >
+                                        <p className="text-xs font-semibold">Ingredient {index + 1}</p>
+                                        <button type="button" onClick={() => setIngredients((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev))} className="rounded-md p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
                                     <div className="grid grid-cols-1 gap-3">
-                                        <input
-                                            type="text"
-                                            value={ingredient.name}
-                                            onChange={(event) => handleIngredientChange(index, 'name', event.target.value)}
-                                            className={fieldClass}
-                                            placeholder="Nom (ex: Semoule)"
-                                        />
+                                        <input type="text" value={ingredient.name} onChange={(event) => handleIngredientChange(index, 'name', event.target.value)} className={fieldClass} placeholder="Nom" />
                                         <div className="grid grid-cols-2 gap-3">
-                                            <input
-                                                type="text"
-                                                value={ingredient.quantity}
-                                                onChange={(event) => handleIngredientChange(index, 'quantity', event.target.value)}
-                                                className={fieldClass}
-                                                placeholder="Quantite (ex: 300)"
-                                            />
-                                            <input
-                                                type="text"
-                                                value={ingredient.unit}
-                                                onChange={(event) => handleIngredientChange(index, 'unit', event.target.value)}
-                                                className={fieldClass}
-                                                placeholder="Unite (ex: g)"
-                                            />
+                                            <input type="text" value={ingredient.quantity} onChange={(event) => handleIngredientChange(index, 'quantity', event.target.value)} className={fieldClass} placeholder="Quantite" />
+                                            <input type="text" value={ingredient.unit} onChange={(event) => handleIngredientChange(index, 'unit', event.target.value)} className={fieldClass} placeholder="Unite" />
                                         </div>
                                     </div>
                                 </div>
@@ -323,27 +291,18 @@ const AddRecipe = () => {
                     </div>
 
                     <div className="card rounded-2xl">
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                            <h2 className="text-lg sm:text-xl font-semibold">Preparation *</h2>
-                            <button type="button" onClick={addStep} className="btn-secondary inline-flex items-center gap-2 text-sm sm:text-base">
+                        <div className="mb-3 flex items-center justify-between">
+                            <h2 className="text-lg font-semibold sm:text-xl">Preparation *</h2>
+                            <button type="button" onClick={() => setSteps((prev) => [...prev, ''])} className="btn-secondary inline-flex items-center gap-2 text-sm">
                                 <Plus size={16} /> Ajouter
                             </button>
                         </div>
                         <div className="space-y-3">
                             {steps.map((step, index) => (
-                                <div key={`step-${index}`} className="flex flex-col sm:flex-row gap-3 rounded-xl border border-gray-200 p-3 dark:border-gray-600">
-                                    <span className="min-w-6 text-sm font-semibold text-gray-900 dark:text-white mt-3 sm:mt-0">{index + 1}.</span>                                    <textarea
-                                        value={step}
-                                        onChange={(event) => handleStepChange(index, event.target.value)}
-                                        className={`${fieldClass} min-h-20`}
-                                        placeholder="Decris cette etape..."
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => removeStep(index)}
-                                        className="mt-1 sm:mt-3 rounded-md p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 shrink-0"
-                                        aria-label={`Supprimer l'etape ${index + 1}`}
-                                    >
+                                <div key={`step-${index}`} className="flex flex-col gap-3 rounded-xl border border-gray-200 p-3 dark:border-gray-600 sm:flex-row">
+                                    <span className="min-w-6 text-sm font-semibold text-white">{index + 1}.</span>
+                                    <textarea value={step} onChange={(event) => handleStepChange(index, event.target.value)} className={`${fieldClass} min-h-20`} placeholder="Decris cette etape..." />
+                                    <button type="button" onClick={() => setSteps((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev))} className="mt-1 rounded-md p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 sm:mt-3">
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
@@ -354,48 +313,16 @@ const AddRecipe = () => {
 
                 <aside className="space-y-6 lg:col-span-4">
                     <div className="card rounded-2xl lg:sticky lg:top-24">
-                        <h2 className="mb-4 text-lg sm:text-xl font-semibold">Details recette</h2>
-
+                        <h2 className="mb-4 text-lg font-semibold sm:text-xl">Details recette</h2>
                         <div className="space-y-4">
-                            <NumberField
-                                id="servings"
-                                label="Portions"
-                                min={1}
-                                max={50}
-                                unit="pers."
-                                value={formData.servings}
-                                onChange={(value) => setFormData((prev) => ({ ...prev, servings: value }))}
-                            />
-                            <NumberField
-                                id="prepTime"
-                                label="Preparation"
-                                min={0}
-                                max={1440}
-                                unit="min"
-                                value={formData.prepTime}
-                                onChange={(value) => setFormData((prev) => ({ ...prev, prepTime: value }))}
-                            />
-                            <NumberField
-                                id="cookTime"
-                                label="Cuisson"
-                                min={0}
-                                max={1440}
-                                unit="min"
-                                value={formData.cookTime}
-                                onChange={(value) => setFormData((prev) => ({ ...prev, cookTime: value }))}
-                            />
+                            <NumberField id="servings" label="Portions" min={1} max={50} unit="pers." value={formData.servings} onChange={(value) => setFormData((prev) => ({ ...prev, servings: value }))} />
+                            <NumberField id="prepTime" label="Preparation" min={0} max={1440} unit="min" value={formData.prepTime} onChange={(value) => setFormData((prev) => ({ ...prev, prepTime: value }))} />
+                            <NumberField id="cookTime" label="Cuisson" min={0} max={1440} unit="min" value={formData.cookTime} onChange={(value) => setFormData((prev) => ({ ...prev, cookTime: value }))} />
 
                             <div>
                                 <label htmlFor="difficulty" className="mb-2 block text-sm font-semibold">Difficulte *</label>
                                 <div className="relative">
-                                    <select
-                                        id="difficulty"
-                                        name="difficulty"
-                                        value={formData.difficulty}
-                                        onChange={handleInputChange}
-                                        className={selectClass}
-                                        required
-                                    >
+                                    <select id="difficulty" name="difficulty" value={formData.difficulty} onChange={handleInputChange} className={selectClass} required>
                                         {DIFFICULTY_OPTIONS.map((option) => (
                                             <option key={option.value} value={option.value}>{option.label}</option>
                                         ))}
@@ -407,14 +334,7 @@ const AddRecipe = () => {
                             <div>
                                 <label htmlFor="type" className="mb-2 block text-sm font-semibold">Type *</label>
                                 <div className="relative">
-                                    <select
-                                        id="type"
-                                        name="type"
-                                        value={formData.type}
-                                        onChange={handleInputChange}
-                                        className={selectClass}
-                                        required
-                                    >
+                                    <select id="type" name="type" value={formData.type} onChange={handleInputChange} className={selectClass} required>
                                         {TYPE_OPTIONS.map((option) => (
                                             <option key={option.value} value={option.value}>{option.label}</option>
                                         ))}
@@ -424,7 +344,7 @@ const AddRecipe = () => {
                             </div>
 
                             <div>
-                                <p className="mb-3 block text-sm font-semibold">Regimes alimentaires</p>
+                                <p className="mb-3 text-sm font-semibold">Regimes alimentaires</p>
                                 <div className="flex flex-wrap gap-2">
                                     {DIET_OPTIONS.map((dietOption) => {
                                         const isSelected = selectedDiets.includes(dietOption.value);
@@ -433,7 +353,7 @@ const AddRecipe = () => {
                                                 key={dietOption.value}
                                                 type="button"
                                                 onClick={() => toggleDiet(dietOption.value)}
-                                                className={`rounded-full border px-3 py-1.5 text-xs sm:text-sm transition ${
+                                                className={`rounded-full border px-3 py-1.5 text-xs transition ${
                                                     isSelected
                                                         ? 'border-primary bg-primary text-white'
                                                         : 'border-gray-300 bg-white text-gray-700 hover:border-primary/60 dark:border-gray-500 dark:bg-gray-700 dark:text-white'
@@ -447,24 +367,14 @@ const AddRecipe = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="image" className="mb-2 block text-sm font-semibold">Photo de la recette</label>
-                                <input
-                                    id="image"
-                                    type="file"
-                                    accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
-                                    onChange={(event) => setImage(event.target.files?.[0] || null)}
-                                    className={fieldClass}
-                                />
+                                <label htmlFor="image" className="mb-2 block text-sm font-semibold">Remplacer la photo</label>
+                                <input id="image" type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" onChange={(event) => setImage(event.target.files?.[0] || null)} className={fieldClass} />
                             </div>
                         </div>
 
                         <div className="mt-6 border-t border-gray-200 pt-5 dark:border-gray-600">
-                            <button
-                                type="submit"
-                                className="btn-primary w-full py-3 text-sm sm:text-base dark:text-black"
-                                disabled={createRecipe.isPending}
-                            >
-                                {createRecipe.isPending ? 'Envoi en cours...' : 'Envoyer la recette'}
+                            <button type="submit" className="btn-primary w-full py-3 text-sm dark:text-black" disabled={updateRecipe.isPending}>
+                                {updateRecipe.isPending ? 'Mise a jour...' : 'Enregistrer les modifications'}
                             </button>
                         </div>
                     </div>
@@ -474,4 +384,8 @@ const AddRecipe = () => {
     );
 };
 
-export default AddRecipe;
+export default DashboardEditRecipe;
+
+
+
+

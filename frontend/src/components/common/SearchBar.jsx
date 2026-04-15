@@ -11,7 +11,7 @@ const SearchBar = ({value, onChange, isLoading}) => {
         if (debouncedValue !== value) {
             onChange(debouncedValue);
         }
-    }, [debouncedValue]);
+    }, [debouncedValue, onChange, value]);
 
     const handleClear = () => {
         setLocalValue('');

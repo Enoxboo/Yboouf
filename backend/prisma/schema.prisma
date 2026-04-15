@@ -28,6 +28,7 @@ enum Role {
   USER
   MODERATOR
   ADMIN
+  SUPER_ADMIN
 }
 
 model Recipe {

@@ -1,6 +1,19 @@
 import jwt from 'jsonwebtoken';
 import prisma from '../services/prisma.service.js';
 
+const ROLE_LEVELS = {
+    USER: 0,
+    MODERATOR: 1,
+    ADMIN: 2,
+    SUPER_ADMIN: 3,
+};
+
+const hasRoleAtLeast = (currentRole, minimumRole) => {
+    const currentLevel = ROLE_LEVELS[currentRole] ?? -1;
+    const minimumLevel = ROLE_LEVELS[minimumRole] ?? Number.MAX_SAFE_INTEGER;
+    return currentLevel >= minimumLevel;
+};
+
 export const authenticateToken = async (req, res, next) => {
     try {
         const authHeader = req.headers['authorization'];
@@ -40,15 +53,22 @@ export const authenticateToken = async (req, res, next) => {
 };
 
 export const requireAdmin = (req, res, next) => {
-    if (req.user.role !== 'ADMIN') {
+    if (!hasRoleAtLeast(req.user.role, 'ADMIN')) {
         return res.status(403).json({ error: 'Admin access required' });
     }
     next();
 };
 
 export const requireModerator = (req, res, next) => {
-    if (req.user.role !== 'MODERATOR' && req.user.role !== 'ADMIN') {
+    if (!hasRoleAtLeast(req.user.role, 'MODERATOR')) {
         return res.status(403).json({ error: 'Moderator or Admin access required' });
+    }
+    next();
+};
+
+export const requireSuperAdmin = (req, res, next) => {
+    if (req.user.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ error: 'Super admin access required' });
     }
     next();
 };
