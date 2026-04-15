@@ -1,4 +1,5 @@
 import prisma from '../services/prisma.service.js';
+import { isPrismaKnownRequestError, isPrismaNotFoundError, sendError } from '../utils/helpers.js';
 
 const MANAGEABLE_ROLES = ['USER', 'MODERATOR', 'ADMIN'];
 
@@ -154,11 +155,11 @@ export const approveRecipe = async (req, res) => {
         });
 
         if (!recipe) {
-            return res.status(404).json({ error: 'Recipe not found' });
+            return sendError(res, 404, 'Recipe not found', 'RECIPE_NOT_FOUND');
         }
 
         if (recipe.status === 'APPROVED') {
-            return res.status(400).json({ error: 'Recipe is already approved' });
+            return sendError(res, 409, 'Recipe is already approved', 'RECIPE_ALREADY_APPROVED');
         }
 
         const updatedRecipe = await prisma.recipe.update({
@@ -193,6 +194,12 @@ export const approveRecipe = async (req, res) => {
         });
     } catch (error) {
         console.error('Approve recipe error:', error);
+        if (isPrismaNotFoundError(error)) {
+            return sendError(res, 404, 'Recipe not found or already deleted', 'RECIPE_NOT_FOUND');
+        }
+        if (isPrismaKnownRequestError(error)) {
+            return sendError(res, 400, 'Invalid recipe update request', 'INVALID_RECIPE_UPDATE');
+        }
         res.status(500).json({ error: 'Failed to approve recipe' });
     }
 };
@@ -219,7 +226,11 @@ export const rejectRecipe = async (req, res) => {
         });
 
         if (!recipe) {
-            return res.status(404).json({ error: 'Recipe not found' });
+            return sendError(res, 404, 'Recipe not found', 'RECIPE_NOT_FOUND');
+        }
+
+        if (recipe.status === 'REJECTED') {
+            return sendError(res, 409, 'Recipe is already rejected', 'RECIPE_ALREADY_REJECTED');
         }
 
         const updatedRecipe = await prisma.recipe.update({
@@ -254,6 +265,12 @@ export const rejectRecipe = async (req, res) => {
         });
     } catch (error) {
         console.error('Reject recipe error:', error);
+        if (isPrismaNotFoundError(error)) {
+            return sendError(res, 404, 'Recipe not found or already deleted', 'RECIPE_NOT_FOUND');
+        }
+        if (isPrismaKnownRequestError(error)) {
+            return sendError(res, 400, 'Invalid recipe update request', 'INVALID_RECIPE_UPDATE');
+        }
         res.status(500).json({ error: 'Failed to reject recipe' });
     }
 };
@@ -433,7 +450,7 @@ export const promoteUserToModerator = async (req, res) => {
         });
 
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return sendError(res, 404, 'User not found', 'USER_NOT_FOUND');
         }
 
         if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
@@ -441,7 +458,7 @@ export const promoteUserToModerator = async (req, res) => {
         }
 
         if (user.role === 'MODERATOR') {
-            return res.status(400).json({ error: 'User is already moderator' });
+            return sendError(res, 409, 'User is already moderator', 'USER_ALREADY_MODERATOR');
         }
 
         const updatedUser = await prisma.user.update({
@@ -464,6 +481,9 @@ export const promoteUserToModerator = async (req, res) => {
         });
     } catch (error) {
         console.error('Promote user error:', error);
+        if (isPrismaNotFoundError(error)) {
+            return sendError(res, 404, 'User not found or already deleted', 'USER_NOT_FOUND');
+        }
         res.status(500).json({ error: 'Failed to promote user' });
     }
 };
@@ -493,7 +513,7 @@ export const setUserRoleBySuperAdmin = async (req, res) => {
         });
 
         if (!targetUser) {
-            return res.status(404).json({ error: 'User not found' });
+            return sendError(res, 404, 'User not found', 'USER_NOT_FOUND');
         }
 
         if (targetUser.role === 'SUPER_ADMIN') {
@@ -501,7 +521,7 @@ export const setUserRoleBySuperAdmin = async (req, res) => {
         }
 
         if (targetUser.role === role) {
-            return res.status(400).json({ error: 'User already has this role' });
+            return sendError(res, 409, 'User already has this role', 'USER_ROLE_ALREADY_SET');
         }
 
         const updatedUser = await prisma.user.update({
@@ -522,6 +542,9 @@ export const setUserRoleBySuperAdmin = async (req, res) => {
         });
     } catch (error) {
         console.error('Set user role error:', error);
+        if (isPrismaNotFoundError(error)) {
+            return sendError(res, 404, 'User not found or already deleted', 'USER_NOT_FOUND');
+        }
         res.status(500).json({ error: 'Failed to update user role' });
     }
 };
@@ -539,7 +562,7 @@ export const deleteUserAccount = async (req, res) => {
         });
 
         if (!targetUser) {
-            return res.status(404).json({ error: 'User not found' });
+            return sendError(res, 404, 'User not found', 'USER_NOT_FOUND');
         }
 
         if (targetUser.role === 'SUPER_ADMIN') {
@@ -565,6 +588,9 @@ export const deleteUserAccount = async (req, res) => {
         res.json({ message: 'Compte utilisateur supprime definitivement' });
     } catch (error) {
         console.error('Delete user account error:', error);
+        if (isPrismaNotFoundError(error)) {
+            return sendError(res, 404, 'User already deleted by another admin', 'USER_ALREADY_DELETED');
+        }
         res.status(500).json({ error: 'Failed to delete user account' });
     }
 };

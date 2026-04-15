@@ -4,6 +4,7 @@ import { ChevronDown, Minus, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCreateRecipe } from '../hooks/useRecipes';
 import { useAuth } from '../context/AuthContext';
+import { extractApiErrorMessage } from '../utils/apiError';
 
 const TYPE_OPTIONS = [
     { value: 'STARTER', label: 'Entree' },
@@ -188,19 +189,20 @@ const AddRecipe = () => {
         }
 
         try {
-            await createRecipe.mutateAsync(payload);
+            const createdRecipeResponse = await createRecipe.mutateAsync(payload);
+            const isAutoPublished = createdRecipeResponse?.recipe?.status === 'APPROVED' || createdRecipeResponse?.recipe?.isPublished === true;
+            const normalizedRole = String(user?.role || '').toUpperCase();
+            const shouldShowPublishedToast = isAutoPublished || normalizedRole === 'ADMIN' || normalizedRole === 'SUPER_ADMIN';
 
             toast.success(
-                user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'
-                    ? 'Recette publiee avec succes.'
-                    : 'Recette envoyee pour validation.'
+                shouldShowPublishedToast
+                    ? 'Recette publiée avec succès.'
+                    : 'Recette envoyée pour validation.'
             );
 
             navigate('/');
         } catch (error) {
-            const details = error?.response?.data?.details;
-            const firstDetail = Array.isArray(details) && details.length > 0 ? details[0].message : null;
-            const message = firstDetail || error?.response?.data?.error || 'Impossible de creer la recette.';
+            const message = extractApiErrorMessage(error, 'Impossible de creer la recette.');
             setFormError(message);
             toast.error(message);
         }

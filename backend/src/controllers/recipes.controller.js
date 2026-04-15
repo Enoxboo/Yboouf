@@ -1,5 +1,6 @@
 import prisma from '../services/prisma.service.js';
 import { deleteImage } from '../middlewares/upload.middleware.js';
+import { isPrismaNotFoundError, sendError } from '../utils/helpers.js';
 
 const ALLOWED_DIETS = new Set(['VEGETARIAN', 'VEGAN', 'GLUTEN_FREE', 'DAIRY_FREE', 'HALAL', 'KOSHER']);
 
@@ -341,7 +342,7 @@ export const updateRecipe = async (req, res) => {
         });
 
         if (!existingRecipe) {
-            return res.status(404).json({ error: 'Recipe not found' });
+            return sendError(res, 404, 'Recipe not found', 'RECIPE_NOT_FOUND');
         }
 
         if (existingRecipe.authorId !== req.user.id && req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
@@ -413,6 +414,10 @@ export const updateRecipe = async (req, res) => {
     } catch (error) {
         console.error('Update recipe error:', error);
 
+        if (isPrismaNotFoundError(error)) {
+            return sendError(res, 404, 'Recipe not found or already deleted', 'RECIPE_NOT_FOUND');
+        }
+
         if (error.message === 'INVALID_INGREDIENTS') {
             return res.status(400).json({ error: 'Ingredients payload is invalid' });
         }
@@ -434,7 +439,7 @@ export const deleteRecipe = async (req, res) => {
         });
 
         if (!recipe) {
-            return res.status(404).json({ error: 'Recipe not found' });
+            return sendError(res, 404, 'Recipe not found', 'RECIPE_NOT_FOUND');
         }
 
         if (recipe.authorId !== req.user.id && req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
@@ -452,6 +457,9 @@ export const deleteRecipe = async (req, res) => {
         res.json({ message: 'Recipe deleted successfully' });
     } catch (error) {
         console.error('Delete recipe error:', error);
+        if (isPrismaNotFoundError(error)) {
+            return sendError(res, 404, 'Recipe already deleted by another admin', 'RECIPE_ALREADY_DELETED');
+        }
         res.status(500).json({ error: 'Failed to delete recipe' });
     }
 };

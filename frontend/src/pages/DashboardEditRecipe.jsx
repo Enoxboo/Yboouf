@@ -5,6 +5,7 @@ import { ChevronDown, Minus, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { adminService } from '../services/adminService';
 import { recipeService } from '../services/recipeService';
+import { extractApiErrorMessage } from '../utils/apiError';
 
 const TYPE_OPTIONS = [
     { value: 'STARTER', label: 'Entree' },
@@ -211,9 +212,7 @@ const DashboardEditRecipe = () => {
             toast.success('Recette mise a jour avec succes');
             navigate('/dashboard');
         } catch (error) {
-            const details = error?.response?.data?.details;
-            const firstDetail = Array.isArray(details) && details.length > 0 ? details[0].message : null;
-            const message = firstDetail || error?.response?.data?.error || 'Impossible de mettre a jour la recette.';
+            const message = extractApiErrorMessage(error, 'Impossible de mettre a jour la recette.');
             setFormError(message);
             toast.error(message);
         }
@@ -226,7 +225,7 @@ const DashboardEditRecipe = () => {
     }
 
     if (recipeQuery.isError || !recipeQuery.data?.recipe) {
-        return <p className="text-sm text-red-600">Impossible de charger cette recette.</p>;
+        return <p className="text-sm text-red-600">{extractApiErrorMessage(recipeQuery.error, 'Impossible de charger cette recette.')}</p>;
     }
 
     return (
@@ -385,6 +384,8 @@ const DashboardEditRecipe = () => {
 };
 
 export default DashboardEditRecipe;
+
+
 
 
 
