@@ -332,8 +332,7 @@ const AddRecipe = () => {
                         <div className="space-y-3">
                             {steps.map((step, index) => (
                                 <div key={`step-${index}`} className="flex flex-col sm:flex-row gap-3 rounded-xl border border-gray-200 p-3 dark:border-gray-600">
-                                    <span className="min-w-6 text-sm font-semibold text-white mt-3 sm:mt-0">{index + 1}.</span>
-                                    <textarea
+                                    <span className="min-w-6 text-sm font-semibold text-gray-900 dark:text-white mt-3 sm:mt-0">{index + 1}.</span>                                    <textarea
                                         value={step}
                                         onChange={(event) => handleStepChange(index, event.target.value)}
                                         className={`${fieldClass} min-h-20`}
