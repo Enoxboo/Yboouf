@@ -51,7 +51,6 @@ const Home = () => {
 
     return (
         <div>
-            {/* Hero Section */}
             <div className="bg-linear-to-r from-[#095d63] to-white dark:from-primary dark:to-secondary rounded-lg px-4 py-6 sm:px-8 sm:py-8 mb-6 sm:mb-8">
                 <h1 className="hero-text text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4">
                     Des saveurs du monde délicieuses,
@@ -61,12 +60,10 @@ const Home = () => {
                 </p>
             </div>
 
-            {/* Carousel */}
             {!search && recipes.length > 0 && (
                 <PopularRecipesCarousel recipes={recipes.slice(0, 10)}/>
             )}
 
-            {/* Filtres */}
             <div className="card mb-6 sm:mb-8">
                 <div className="flex flex-col gap-2 sm:gap-3">
                     <div>
@@ -124,12 +121,10 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* Titre */}
             <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
                 {search ? `Résultats pour "${search}"` : 'Toutes les recettes'}
             </h2>
 
-            {/* Liste */}
             {isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                     {[...Array(8)].map((_, i) => (
