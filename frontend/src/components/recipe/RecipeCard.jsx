@@ -1,12 +1,8 @@
 import { Link } from 'react-router-dom';
+import { getRecipeImageUrl, RECIPE_PLACEHOLDER_URL } from '../../utils/media';
 
 const RecipeCard = ({ recipe }) => {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    const baseURL = API_URL.replace('/api', '');
-
-    const imageUrl = recipe.imageUrl
-        ? `${baseURL}${recipe.imageUrl}`
-        : '/placeholder-recipe.jpg';
+    const imageUrl = getRecipeImageUrl(recipe.imageUrl);
 
     return (
         <div className="card hover:shadow-lg transition">
@@ -16,7 +12,7 @@ const RecipeCard = ({ recipe }) => {
                     alt={recipe.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                        e.target.src = '/placeholder-recipe.jpg';
+                        e.currentTarget.src = RECIPE_PLACEHOLDER_URL;
                     }}
                 />
             </div>
