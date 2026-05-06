@@ -59,8 +59,13 @@ export const recipeService = {
         return response.data;
     },
 
-    comment: async (recipeId, content) => {
-        const response = await api.post(`/recipes/${recipeId}/comment`, { content });
+    addComment: async (recipeId, content) => {
+        const response = await api.post(`/recipes/${recipeId}/comments`, { content });
+        return response.data;
+    },
+
+    deleteComment: async (commentId) => {
+        const response = await api.delete(`/recipes/comments/${commentId}`);
         return response.data;
     },
 };

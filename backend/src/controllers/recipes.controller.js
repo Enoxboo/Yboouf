@@ -608,3 +608,81 @@ export const removeFromFavorites = async (req, res) => {
         res.status(500).json({ error: 'Failed to remove from favorites' });
     }
 };
+
+export const addComment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { content } = req.body;
+
+        if (!content || content.trim().length === 0) {
+            return res.status(400).json({ error: 'Comment content is required' });
+        }
+
+        if (content.trim().length > 1000) {
+            return res.status(400).json({ error: 'Comment must not exceed 1000 characters' });
+        }
+
+        const recipe = await prisma.recipe.findUnique({
+            where: { id },
+        });
+
+        if (!recipe) {
+            return res.status(404).json({ error: 'Recipe not found' });
+        }
+
+        const comment = await prisma.comment.create({
+            data: {
+                content: content.trim(),
+                userId: req.user.id,
+                recipeId: id,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                    },
+                },
+            },
+        });
+
+        res.status(201).json({
+            message: 'Comment added successfully',
+            comment,
+        });
+    } catch (error) {
+        console.error('Add comment error:', error);
+        res.status(500).json({ error: 'Failed to add comment' });
+    }
+};
+
+export const deleteComment = async (req, res) => {
+    try {
+        const { commentId } = req.params;
+
+        const comment = await prisma.comment.findUnique({
+            where: { id: commentId },
+        });
+
+        if (!comment) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+
+        // Check if user is the comment author or has moderator/admin role
+        if (comment.userId !== req.user.id && req.user.role !== 'MODERATOR' && req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+            return res.status(403).json({ error: 'Not authorized to delete this comment' });
+        }
+
+        await prisma.comment.delete({
+            where: { id: commentId },
+        });
+
+        res.json({ message: 'Comment deleted successfully' });
+    } catch (error) {
+        console.error('Delete comment error:', error);
+        if (isPrismaNotFoundError(error)) {
+            return sendError(res, 404, 'Comment not found or already deleted', 'COMMENT_NOT_FOUND');
+        }
+        res.status(500).json({ error: 'Failed to delete comment' });
+    }
+};

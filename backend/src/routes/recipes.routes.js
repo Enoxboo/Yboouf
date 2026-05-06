@@ -10,6 +10,8 @@ import {
     rateRecipe,
     addToFavorites,
     removeFromFavorites,
+    addComment,
+    deleteComment,
 } from '../controllers/recipes.controller.js';
 import {authenticateToken, optionalAuth} from '../middlewares/auth.middleware.js';
 import {uploadSingle} from '../middlewares/upload.middleware.js';
@@ -51,6 +53,13 @@ const recipeValidation = [
         .withMessage('Instructions must be at least 20 characters'),
 ];
 
+const commentValidation = [
+    body('content')
+        .trim()
+        .isLength({min: 1, max: 1000})
+        .withMessage('Comment must be between 1 and 1000 characters'),
+];
+
 router.get('/', optionalAuth, getAllRecipes);
 router.get('/filters', getRecipeFilters);
 
@@ -78,5 +87,9 @@ router.put(
 
 router.delete('/:id', authenticateToken, deleteRecipe);
 router.get('/:id', optionalAuth, getRecipeById);
+
+// Comment routes
+router.post('/:id/comments', authenticateToken, commentValidation, validate, addComment);
+router.delete('/comments/:commentId', authenticateToken, deleteComment);
 
 export default router;

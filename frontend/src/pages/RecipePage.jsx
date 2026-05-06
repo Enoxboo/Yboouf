@@ -12,6 +12,9 @@ function RecipePage() {
     const [error, setError] = useState(null);
     const [userRating, setUserRating] = useState(null);
     const [isFavorite, setIsFavorite] = useState(false);
+    const [newComment, setNewComment] = useState('');
+    const [commentLoading, setCommentLoading] = useState(false);
+    const [commentError, setCommentError] = useState(null);
 
     useEffect(() => {
         const fetchRecipe = async () => {
@@ -70,6 +73,51 @@ function RecipePage() {
             alert('Lien copié dans le presse-papiers !');
         } catch (err) {
             console.error('Erreur share:', err);
+        }
+    };
+
+    const handleAddComment = async (e) => {
+        e.preventDefault();
+        if (!user) return;
+        if (!newComment.trim()) return;
+
+        try {
+            setCommentLoading(true);
+            setCommentError(null);
+            const response = await recipeService.addComment(id, newComment);
+            setRecipe(prev => ({
+                ...prev,
+                comments: [response.comment, ...prev.comments],
+                _count: {
+                    ...prev._count,
+                    comments: prev._count.comments + 1,
+                },
+            }));
+            setNewComment('');
+        } catch (err) {
+            console.error('Erreur add comment:', err);
+            setCommentError(err.message || 'Erreur lors de l\'ajout du commentaire');
+        } finally {
+            setCommentLoading(false);
+        }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) return;
+
+        try {
+            await recipeService.deleteComment(commentId);
+            setRecipe(prev => ({
+                ...prev,
+                comments: prev.comments.filter(c => c.id !== commentId),
+                _count: {
+                    ...prev._count,
+                    comments: prev._count.comments - 1,
+                },
+            }));
+        } catch (err) {
+            console.error('Erreur delete comment:', err);
+            alert('Erreur lors de la suppression du commentaire');
         }
     };
 
@@ -207,6 +255,94 @@ function RecipePage() {
                             Instructions
                         </h2>
                         <div className="prose dark:prose-invert max-w-none whitespace-pre-line text-sm sm:text-base text-gray-700 dark:text-gray-300">                            {recipe.instructions}
+                        </div>
+                    </div>
+
+                    {/* Comments Section */}
+                    <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-200 dark:border-gray-700">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
+                            Commentaires ({recipe._count?.comments || 0})
+                        </h2>
+
+                        {/* Add Comment Form */}
+                        {user ? (
+                            <form onSubmit={handleAddComment} className="mb-6 sm:mb-8">
+                                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                    <textarea
+                                        value={newComment}
+                                        onChange={(e) => setNewComment(e.target.value)}
+                                        placeholder="Ajouter un commentaire..."
+                                        maxLength={1000}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                                        rows="3"
+                                    />
+                                    <div className="flex justify-between items-center mt-2">
+                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                            {newComment.length}/1000
+                                        </span>
+                                        <button
+                                            type="submit"
+                                            disabled={commentLoading || !newComment.trim()}
+                                            className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {commentLoading ? 'Envoi...' : 'Publier'}
+                                        </button>
+                                    </div>
+                                </div>
+                                {commentError && (
+                                    <div className="mt-2 text-sm text-red-500">
+                                        {commentError}
+                                    </div>
+                                )}
+                            </form>
+                        ) : (
+                            <div className="mb-6 sm:mb-8 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-sm text-blue-700 dark:text-blue-300">
+                                Connectez-vous pour ajouter un commentaire
+                            </div>
+                        )}
+
+                        {/* Comments List */}
+                        <div className="space-y-4">
+                            {recipe.comments && recipe.comments.length > 0 ? (
+                                recipe.comments.map((comment) => (
+                                    <div
+                                        key={comment.id}
+                                        className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"
+                                    >
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="flex-1">
+                                                <p className="font-semibold text-gray-900 dark:text-white">
+                                                    {comment.user.username}
+                                                </p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                    {new Date(comment.createdAt).toLocaleDateString('fr-FR', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                    })}
+                                                </p>
+                                            </div>
+                                            {user && (user.id === comment.userId || user.role === 'MODERATOR' || user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && (
+                                                <button
+                                                    onClick={() => handleDeleteComment(comment.id)}
+                                                    className="text-red-500 hover:text-red-700 text-sm font-medium"
+                                                >
+                                                    Supprimer
+                                                </button>
+                                            )}
+                                        </div>
+                                        <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                                            {comment.content}
+                                        </p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+                                    Aucun commentaire pour le moment. Soyez le premier à commenter !
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
