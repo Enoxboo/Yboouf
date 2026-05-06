@@ -25,6 +25,11 @@ const Profile = () => {
     const [statusFilter, setStatusFilter] = useState('');
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState(null);
+    const [favorites, setFavorites] = useState([]);
+    const [favoritesLoading, setFavoritesLoading] = useState(false);
+    const [favoritesError, setFavoritesError] = useState(null);
+    const [favoritesPage, setFavoritesPage] = useState(1);
+    const [favoritesPagination, setFavoritesPagination] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -68,6 +73,31 @@ const Profile = () => {
 
         fetchRecipes();
     }, [page, statusFilter]);
+
+    useEffect(() => {
+        const fetchFavorites = async () => {
+            try {
+                setFavoritesLoading(true);
+                setFavoritesError(null);
+
+                const response = await api.get('/users/favorites', {
+                    params: {
+                        page: favoritesPage,
+                        limit: 8,
+                    }
+                });
+
+                setFavorites(response.data?.recipes || []);
+                setFavoritesPagination(response.data?.pagination || null);
+            } catch {
+                setFavoritesError('Erreur lors du chargement de vos favoris.');
+            } finally {
+                setFavoritesLoading(false);
+            }
+        };
+
+        fetchFavorites();
+    }, [favoritesPage]);
 
     if (isLoading && !profile) {
         return <p className="text-sm">Chargement du profil...</p>;
@@ -204,6 +234,60 @@ const Profile = () => {
                                     type="button"
                                     disabled={page >= pagination.pages}
                                     onClick={() => setPage((prev) => prev + 1)}
+                                    className="btn-secondary text-sm disabled:opacity-50"
+                                >
+                                    Suivant
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="card rounded-2xl">
+                        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                            <h2 className="text-lg font-semibold sm:text-xl">Mes favoris</h2>
+                        </div>
+
+                        {favoritesError && <p className="mb-3 text-sm text-red-600">{favoritesError}</p>}
+
+                        {favoritesLoading ? (
+                            <p className="text-sm">Chargement des favoris...</p>
+                        ) : favorites.length === 0 ? (
+                            <p className="text-sm text-gray-500">Aucun favori trouve.</p>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-3">
+                                {favorites.map((favorite) => (
+                                    <article key={favorite.id} className="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            <p className="font-semibold">{favorite.title}</p>
+                                        </div>
+                                        <p className="mt-1 text-sm text-gray-500">{favorite.country} - {favorite.type}</p>
+                                        <div className="mt-3">
+                                            <Link to={`/recipe/${favorite.id}`} className="text-sm font-medium text-primary hover:underline">
+                                                Voir la recette
+                                            </Link>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                        )}
+
+                        {favoritesPagination?.pages > 1 && (
+                            <div className="mt-5 flex items-center justify-between gap-2">
+                                <button
+                                    type="button"
+                                    disabled={favoritesPage <= 1}
+                                    onClick={() => setFavoritesPage((prev) => prev - 1)}
+                                    className="btn-secondary text-sm disabled:opacity-50"
+                                >
+                                    Precedent
+                                </button>
+                                <span className="text-xs text-gray-500">
+                                    Page {favoritesPagination.page} / {favoritesPagination.pages}
+                                </span>
+                                <button
+                                    type="button"
+                                    disabled={favoritesPage >= favoritesPagination.pages}
+                                    onClick={() => setFavoritesPage((prev) => prev + 1)}
                                     className="btn-secondary text-sm disabled:opacity-50"
                                 >
                                     Suivant

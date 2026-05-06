@@ -1,12 +1,17 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { getRecipeImageUrl, RECIPE_PLACEHOLDER_URL } from '../utils/media';
+import { recipeService } from '../services/recipeService';
+import { useAuth } from '../context/AuthContext';
 
 function RecipePage() {
     const { id } = useParams();
+    const { user } = useAuth();
     const [recipe, setRecipe] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [userRating, setUserRating] = useState(null);
+    const [isFavorite, setIsFavorite] = useState(false);
 
     useEffect(() => {
         const fetchRecipe = async () => {
@@ -14,18 +19,10 @@ function RecipePage() {
                 setLoading(true);
                 setError(null);
 
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/recipes/${id}`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
+                const data = await recipeService.getById(id);
                 setRecipe(data);
+                setUserRating(data.userRating || null);
+                setIsFavorite(data.isFavorite || false);
             } catch (err) {
                 console.error('Erreur fetch:', err);
                 setError(err.message);
@@ -36,6 +33,45 @@ function RecipePage() {
 
         fetchRecipe();
     }, [id]);
+
+    const handleRate = async (score) => {
+        if (!user) return;
+        try {
+            const response = await recipeService.rate(id, score);
+            setRecipe(prev => ({
+                ...prev,
+                averageRating: response.averageRating,
+                ratingsCount: response.ratingsCount,
+            }));
+            setUserRating(score);
+        } catch (err) {
+            console.error('Erreur rate:', err);
+        }
+    };
+
+    const handleToggleFavorite = async () => {
+        if (!user) return;
+        try {
+            if (isFavorite) {
+                await recipeService.removeFromFavorites(id);
+                setIsFavorite(false);
+            } else {
+                await recipeService.addToFavorites(id);
+                setIsFavorite(true);
+            }
+        } catch (err) {
+            console.error('Erreur favorite:', err);
+        }
+    };
+
+    const handleShare = async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            alert('Lien copié dans le presse-papiers !');
+        } catch (err) {
+            console.error('Erreur share:', err);
+        }
+    };
 
     if (loading) {
         return (
@@ -91,6 +127,39 @@ function RecipePage() {
                     <p className="text-gray-700 dark:text-gray-300 text-base sm:text-lg mb-6 sm:mb-8">
                         {recipe.description}
                     </p>
+
+                    {user && (
+                        <div className="flex flex-wrap items-center gap-4 mb-6 sm:mb-8">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium">Noter :</span>
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        onClick={() => handleRate(star)}
+                                        className={`text-xl ${userRating >= star ? 'text-yellow-500' : 'text-gray-300'} hover:text-yellow-500`}
+                                    >
+                                        ★
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                onClick={handleToggleFavorite}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
+                                    isFavorite
+                                        ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200'
+                                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+                                } hover:opacity-80`}
+                            >
+                                ❤️ {isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                            </button>
+                            <button
+                                onClick={handleShare}
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 font-medium hover:opacity-80"
+                            >
+                                🔗 Partager
+                            </button>
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
                         <div className="bg-gray-50 dark:bg-gray-700 p-3 sm:p-4 rounded-lg text-center">
