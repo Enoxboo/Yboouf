@@ -76,6 +76,10 @@ router.post('/:id/rate', authenticateToken, rateRecipe);
 router.post('/:id/favorite', authenticateToken, addToFavorites);
 router.delete('/:id/favorite', authenticateToken, removeFromFavorites);
 
+// Comment routes - MUST be before generic :id routes
+router.post('/:id/comments', authenticateToken, commentValidation, validate, addComment);
+router.delete('/comments/:commentId', authenticateToken, deleteComment);
+
 router.put(
     '/:id',
     authenticateToken,
@@ -88,8 +92,5 @@ router.put(
 router.delete('/:id', authenticateToken, deleteRecipe);
 router.get('/:id', optionalAuth, getRecipeById);
 
-// Comment routes
-router.post('/:id/comments', authenticateToken, commentValidation, validate, addComment);
-router.delete('/comments/:commentId', authenticateToken, deleteComment);
 
 export default router;
