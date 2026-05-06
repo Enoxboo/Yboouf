@@ -181,6 +181,7 @@ export const getRecipeById = async (req, res) => {
                 _count: {
                     select: {
                         favorites: true,
+                        comments: true,
                     },
                 },
             },
