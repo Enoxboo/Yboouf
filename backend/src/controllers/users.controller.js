@@ -123,6 +123,85 @@ export const getMyStats = async (req, res) => {
     }
 };
 
+export const getMyFavorites = async (req, res) => {
+    try {
+        const { page = 1, limit = 12 } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const where = {
+            userId: req.user.id,
+            recipe: {
+                status: 'APPROVED',
+                isPublished: true,
+            },
+        };
+
+        const [favorites, total] = await Promise.all([
+            prisma.favorite.findMany({
+                where,
+                skip,
+                take: parseInt(limit),
+                include: {
+                    recipe: {
+                        include: {
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                },
+                            },
+                            ingredients: true,
+                            _count: {
+                                select: {
+                                    favorites: true,
+                                    ratings: true,
+                                    comments: true,
+                                },
+                            },
+                            ratings: {
+                                select: {
+                                    score: true,
+                                },
+                            },
+                        },
+                    },
+                },
+                orderBy: {
+                    createdAt: 'desc',
+                },
+            }),
+            prisma.favorite.count({ where }),
+        ]);
+
+        const recipes = favorites.map(fav => {
+            const recipe = fav.recipe;
+            const avgRating = recipe.ratings.length > 0
+                ? recipe.ratings.reduce((sum, r) => sum + r.score, 0) / recipe.ratings.length
+                : 0;
+
+            const { ratings, ...recipeData } = recipe;
+
+            return {
+                ...recipeData,
+                averageRating: Math.round(avgRating * 10) / 10,
+            };
+        });
+
+        res.json({
+            recipes,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                pages: Math.ceil(total / parseInt(limit)),
+            },
+        });
+    } catch (error) {
+        console.error('Get my favorites error:', error);
+        res.status(500).json({ error: 'Failed to fetch your favorites' });
+    }
+};
+
 export const getProfile = async (req, res) => {
     try {
         const user = await prisma.user.findUnique({
