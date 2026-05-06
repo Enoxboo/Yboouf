@@ -7,6 +7,9 @@ import {
     createRecipe,
     updateRecipe,
     deleteRecipe,
+    rateRecipe,
+    addToFavorites,
+    removeFromFavorites,
 } from '../controllers/recipes.controller.js';
 import {authenticateToken, optionalAuth} from '../middlewares/auth.middleware.js';
 import {uploadSingle} from '../middlewares/upload.middleware.js';
@@ -50,7 +53,6 @@ const recipeValidation = [
 
 router.get('/', optionalAuth, getAllRecipes);
 router.get('/filters', getRecipeFilters);
-router.get('/:id', optionalAuth, getRecipeById);
 
 router.post(
     '/',
@@ -60,6 +62,10 @@ router.post(
     validate,
     createRecipe
 );
+
+router.post('/:id/rate', authenticateToken, rateRecipe);
+router.post('/:id/favorite', authenticateToken, addToFavorites);
+router.delete('/:id/favorite', authenticateToken, removeFromFavorites);
 
 router.put(
     '/:id',
@@ -71,5 +77,6 @@ router.put(
 );
 
 router.delete('/:id', authenticateToken, deleteRecipe);
+router.get('/:id', optionalAuth, getRecipeById);
 
 export default router;

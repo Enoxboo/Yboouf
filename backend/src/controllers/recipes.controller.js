@@ -502,3 +502,109 @@ export const getRecipeFilters = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch filters' });
     }
 };
+
+export const rateRecipe = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { score } = req.body;
+
+        if (!score || score < 1 || score > 5) {
+            return res.status(400).json({ error: 'Score must be between 1 and 5' });
+        }
+
+        const recipe = await prisma.recipe.findUnique({
+            where: { id },
+        });
+
+        if (!recipe) {
+            return res.status(404).json({ error: 'Recipe not found' });
+        }
+
+        await prisma.rating.upsert({
+            where: {
+                userId_recipeId: {
+                    userId: req.user.id,
+                    recipeId: id,
+                },
+            },
+            update: {
+                score: parseInt(score),
+            },
+            create: {
+                userId: req.user.id,
+                recipeId: id,
+                score: parseInt(score),
+            },
+        });
+
+        // Recalculate average rating
+        const ratings = await prisma.rating.findMany({
+            where: { recipeId: id },
+            select: { score: true },
+        });
+
+        const averageRating = ratings.length > 0
+            ? ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length
+            : 0;
+
+        res.json({
+            message: 'Rating submitted successfully',
+            averageRating: Math.round(averageRating * 10) / 10,
+            ratingsCount: ratings.length,
+        });
+    } catch (error) {
+        console.error('Rate recipe error:', error);
+        res.status(500).json({ error: 'Failed to rate recipe' });
+    }
+};
+
+export const addToFavorites = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const recipe = await prisma.recipe.findUnique({
+            where: { id },
+        });
+
+        if (!recipe) {
+            return res.status(404).json({ error: 'Recipe not found' });
+        }
+
+        await prisma.favorite.upsert({
+            where: {
+                userId_recipeId: {
+                    userId: req.user.id,
+                    recipeId: id,
+                },
+            },
+            update: {},
+            create: {
+                userId: req.user.id,
+                recipeId: id,
+            },
+        });
+
+        res.json({ message: 'Recipe added to favorites' });
+    } catch (error) {
+        console.error('Add to favorites error:', error);
+        res.status(500).json({ error: 'Failed to add to favorites' });
+    }
+};
+
+export const removeFromFavorites = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await prisma.favorite.deleteMany({
+            where: {
+                userId: req.user.id,
+                recipeId: id,
+            },
+        });
+
+        res.json({ message: 'Recipe removed from favorites' });
+    } catch (error) {
+        console.error('Remove from favorites error:', error);
+        res.status(500).json({ error: 'Failed to remove from favorites' });
+    }
+};
